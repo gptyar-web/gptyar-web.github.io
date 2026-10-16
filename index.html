@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173c32">
+  <meta name="description" content="معرفی و مقایسه اشتراک‌های ChatGPT Go، Plus و Pro؛ انتخاب نوع حساب و محاسبه هزینه حساب اشتراکی به ریال و تومان.">
+  <title>اشتراک هوش مصنوعی | Go، Plus و Pro</title>
+  <!--
+Vazirmatn v33.003 — original font files from:
+https://github.com/rastikerdar/vazirmatn/tree/v33.003
+Copyright 2015 The Vazirmatn Project Authors (https://github.com/rastikerdar/vazirmatn)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+  -->
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <style>
+    /* فونت Vazirmatn از فایل‌های همراه در assets/fonts بارگذاری می‌شود؛ نصب فونت و اینترنت لازم نیست. */
+    :root{--paper:#f7f8f2;--white:#fff;--ink:#18372e;--muted:#64736b;--green:#204d3d;--mint:#d9f6b4;--peach:#ffcca8;--line:#dce3d9;--radius:24px;--shadow:0 18px 60px #16392b0c}
+    *,*:before,*:after{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:100px}
+    body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.95 Vazirmatn,sans-serif;-webkit-font-smoothing:antialiased}
+    button,input,select,textarea,option,optgroup{font:inherit}
+    button,a,select,input,summary{-webkit-tap-highlight-color:transparent}
+    button,a{touch-action:manipulation}
+    button{cursor:pointer}
+    a{color:inherit;text-underline-offset:5px}
+    button:disabled{cursor:not-allowed;opacity:.5}
+    :focus-visible{outline:3px solid #bb6a31;outline-offset:5px}
+    [hidden]{display:none!important}
+    ::selection{background:var(--mint);color:var(--ink)}
+    h1,h2,h3,p{margin:0}
+    h1,h2,h3{font-weight:700;line-height:1.6}
+    .wrap{width:min(1180px,calc(100% - 64px));margin-inline:auto}
+    .icon{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;vertical-align:middle}
+    .icon.big{width:28px;height:28px}
+    .english{font-family:Vazirmatn,sans-serif;letter-spacing:-.6px}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+    .skip{position:fixed;top:10px;right:20px;z-index:30;transform:translateY(-150%);background:var(--ink);color:white;padding:8px 20px;border-radius:10px}
+    .skip:focus{transform:none}
+    .site-header{height:94px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .brand-symbol{width:43px;height:43px;display:grid;place-items:center;background:var(--ink);color:var(--mint);border-radius:13px}
+    .brand-title{font-weight:700;font-size:16px;display:block;line-height:1.8}
+    .brand-subtitle{font:10px/1.8 Vazirmatn,sans-serif;letter-spacing:2px;color:var(--muted)}
+    .nav{display:flex;align-items:center;gap:28px;font-size:13px}
+    .nav a{text-decoration:none;transition:color .2s}
+    .nav a:hover{color:#497b35}
+    .nav .contact-nav{border:1px solid #bdcabe;padding:8px 18px;border-radius:30px;display:flex;align-items:center;gap:10px}
+    .hero{position:relative;overflow:hidden;background:var(--ink);border-radius:32px;color:#fff;padding:56px;display:grid;grid-template-columns:1.15fr 1fr;gap:60px;align-items:center;isolation:isolate}
+    .hero:before{content:"";position:absolute;width:480px;height:480px;border:1px solid #e5ffc214;border-radius:50%;right:-265px;bottom:-330px;box-shadow:0 0 0 60px #e5ffc208,0 0 0 120px #e5ffc204;z-index:-1}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:#d9e4ce;font-size:12px;margin-bottom:24px}
+    .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint)}
+    h1{font-size:clamp(30px,4.25vw,52px);letter-spacing:-1.9px;line-height:1.62}
+    h1 em{font-style:normal;color:var(--mint)}
+    .hero-copy>p{color:#c0d1c7;font-size:14px;max-width:450px;margin-top:24px;line-height:2.15}
+    .hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+    .hero-pill{border:1px solid #a8c3b23b;border-radius:8px;padding:5px 11px;color:#d9e6de;font-size:11px;display:flex;gap:10px;align-items:center}
+    .hero-pill b{font-family:Vazirmatn,sans-serif;font-size:13px;color:var(--mint)}
+    .provider-card{background:#f8faef;color:var(--ink);border-radius:24px;padding:28px;box-shadow:0 16px 55px #0002}
+    .card-topline{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);margin-bottom:18px}
+    .step-tag{background:#e6eddf;border-radius:6px;padding:3px 9px;color:var(--green)}
+    .provider-card h2{font-size:21px;margin-bottom:22px;line-height:1.8}
+    .input-label{font-size:12px;color:#53665a;display:block;margin-bottom:8px}
+    .select-shell{position:relative}
+    .select-shell select{appearance:none;width:100%;border:1px solid #c8d3c0;background:var(--white);border-radius:12px;padding:12px 15px 12px 40px;color:var(--ink);min-height:52px}
+    .select-shell .icon{position:absolute;left:14px;top:17px;width:17px;height:17px;pointer-events:none}
+    .provider-preview{display:flex;align-items:center;gap:13px;margin:19px 0 22px;padding:14px;background:#edf1e6;border:1px solid transparent;border-radius:13px;transition:border-color .2s,background .2s}
+    .provider-preview.selected{background:#e8f3da;border-color:#a9c68f}
+    .provider-mark{width:43px;height:43px;border:1px solid #cad9c7;border-radius:50%;display:grid;place-items:center;background:#f8faef;color:var(--green)}
+    .provider-name{font-size:19px;font-weight:700;line-height:1.3;display:block}
+    .provider-preview p{font-size:11px;color:var(--muted);margin-top:5px}
+    .provider-preview .provider-check{margin-right:auto;color:var(--green);width:18px;height:18px;opacity:0}
+    .provider-preview.selected .provider-check{opacity:1}
+    .btn{border:1px solid transparent;background:var(--ink);color:white;border-radius:11px;padding:11px 19px;min-height:47px;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;font-weight:700;font-size:13px;transition:background .2s,transform .2s}
+    .btn:hover:not(:disabled){background:#2c5947;transform:translateY(-1px)}
+    .btn .icon{width:18px;height:18px}
+    .btn.full{width:100%}
+    .btn.light{background:var(--mint);color:var(--ink)}
+    .btn.light:hover:not(:disabled){background:#c8e9a0}
+    .btn.outline{background:transparent;color:var(--ink);border-color:#cbd8c6}
+    .btn.outline:hover:not(:disabled){background:#eff3e8}
+    .provider-footnote{font-size:10px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.9}
+    .journey{display:flex;align-items:center;justify-content:center;gap:30px;padding:25px 10px;color:#657468;font-size:12px}
+    .journey span{display:flex;align-items:center;gap:9px}
+    .journey b{font-size:10px;font-weight:400;border:1px solid #cbd8c5;width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center}
+    .journey .icon{width:14px;height:14px;opacity:.5}
+    .section{padding-block:64px}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:30px}
+    .section-kicker{display:block;color:#627b5c;font-size:11px;font-weight:700;margin-bottom:8px;letter-spacing:.2px}
+    .section-head h2,.faq-intro h2{font-size:31px;letter-spacing:-1px}
+    .section-head p,.faq-intro p{font-size:13px;color:var(--muted);margin-top:9px}
+    .provider-badge{display:flex;align-items:center;gap:10px;border:1px solid #d3decc;background:#eef3e5;border-radius:30px;padding:7px 15px;white-space:nowrap;font-size:12px}
+    .provider-badge .dot{background:#5f8e40;width:6px;height:6px}
+    .provider-badge button{border:0;border-right:1px solid #c9d8bd;background:transparent;color:#4a683b;font-size:10px;padding:0 10px 0 0;margin-right:3px;min-height:28px}
+    .plans-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+    .plan{border:1px solid var(--line);border-radius:var(--radius);padding:28px 25px;display:flex;flex-direction:column;background:#fffef9;position:relative;box-shadow:var(--shadow)}
+    .plan.featured{background:var(--ink);color:white;border-color:var(--ink)}
+    .plan-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .plan h3{font-size:31px;line-height:1.2;font-weight:700}
+    .plan-tag{font-size:10px;border-radius:6px;padding:4px 9px;background:#edf1e5;color:#5b7052;white-space:nowrap}
+    .plan.featured .plan-tag{background:var(--mint);color:var(--ink)}
+    .plan.pro .plan-tag{background:#ffead8;color:#815435}
+    .plan-lead{font-size:12px;color:var(--muted);margin-bottom:20px;min-height:48px}
+    .featured .plan-lead{color:#c2d2c7}
+    .feature-list{list-style:none;padding:0;margin:0 0 17px;display:grid;gap:9px;font-size:12px}
+    .feature-list li{display:flex;gap:9px;align-items:flex-start}
+    .feature-list .icon{width:16px;height:16px;margin-top:4px;color:#568146}
+    .featured .feature-list .icon{color:var(--mint)}
+    .plan-details{font-size:11px;border-block:1px solid var(--line);padding-block:12px;margin-bottom:18px}
+    .plan-details summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;color:#4a6655;min-height:25px}
+    summary::-webkit-details-marker{display:none}
+    .plan-details summary:after{content:"+";font:20px Vazirmatn,sans-serif}
+    .plan-details[open] summary:after{content:"−"}
+    .plan-details p{font-size:11px;color:var(--muted);margin-top:10px;line-height:2.15}
+    .featured .plan-details{border-color:#ffffff26}
+    .featured .plan-details summary{color:#d6e8cb}
+    .featured .plan-details p{color:#c4d1c8}
+    .model-note{background:#ffffff0c;border-radius:8px;padding:10px;margin-top:10px;font-size:10px;color:#cdd9d0}
+    .pro .model-note{background:#f1f4eb;color:#5a6d5c}
+    .model-note a{text-decoration-color:#9eaf9b}
+    fieldset{border:0;margin:0;padding:0;min-width:0}
+    legend{font-size:11px;font-weight:700;margin-bottom:9px;padding:0}
+    .account-option{position:relative;display:flex;align-items:center;gap:9px;border:1px solid #e2e7dc;background:#f7f9f2;border-radius:9px;padding:9px 10px;margin-bottom:7px;cursor:pointer;font-size:11px;min-height:47px}
+    .account-option:has(input:checked){border-color:#96af7c;background:#f0f5e7}
+    .account-option input{accent-color:var(--green);width:15px;height:15px;margin:0;flex-shrink:0}
+    .account-option .option-price{margin-right:auto;white-space:nowrap;font-size:11px;font-weight:700}
+    .featured .account-option{background:#ffffff08;border-color:#ffffff24;color:#ecf3e8}
+    .featured .account-option:has(input:checked){border-color:#cae9a7;background:#cce9af12}
+    .featured .account-option input{accent-color:var(--mint)}
+    .featured .account-option .option-price{color:#d9f6b4}
+    .account-note{font-size:10px;color:#6d7c6d;line-height:2;min-height:67px;margin:9px 0 17px}
+    .featured .account-note{color:#bdcdbf}
+    .plan-bottom{margin-top:auto;padding-top:8px}
+    .price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}
+    .price-number{font-size:43px;font-family:Vazirmatn,sans-serif;font-weight:700;line-height:1.2;letter-spacing:-1px}
+    .price-unit{font-size:12px;color:var(--muted)}
+    .featured .price-unit{color:#c0d1be}
+    .price-extra{font-size:10px;margin-right:auto;color:#75906a}
+    .featured .price-extra{color:#c0d9a8}
+    .price-row.shared-price .price-number{font-size:29px;font-family:Vazirmatn,sans-serif}
+    .pricing-note{font-size:11px;color:var(--muted);margin-top:19px;display:flex;gap:8px;align-items:flex-start}
+    .pricing-note .icon{width:16px;height:16px;margin-top:3px}
+    .shared-section{padding-top:20px;padding-bottom:72px}
+    .shared-shell{display:grid;grid-template-columns:1fr 1fr;gap:52px;padding:40px;background:#e7eedf;border:1px solid #dbe4cf;border-radius:28px;align-items:center;position:relative;overflow:hidden}
+    .shared-intro{padding:5px 8px}
+    .small-badge{display:inline-flex;align-items:center;gap:7px;background:#d2e1bf;border:1px solid #bacfa8;padding:5px 10px;border-radius:7px;color:#395333;font-size:10px;font-weight:700}
+    .small-badge .icon{width:14px;height:14px}
+    .shared-intro h2{font-size:37px;line-height:1.6;letter-spacing:-1.4px;margin:17px 0}
+    .shared-intro>p{font-size:13px;color:#61715e;line-height:2.1;max-width:440px}
+    .privacy-callout{background:var(--ink);color:#e5f2db;padding:20px;border-radius:15px;margin-top:25px;display:flex;align-items:flex-start;gap:13px}
+    .privacy-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#ffffff12;color:var(--mint);flex-shrink:0}
+    .privacy-callout h3{font-size:14px;color:var(--mint);margin-bottom:6px}
+    .privacy-callout p{font-size:11px;color:#c5d4c6;line-height:2}
+    .privacy-footnote{font-size:10px!important;margin-top:13px!important;color:#63765b!important}
+    .calculator{background:#fffef8;border:1px solid #d5dfcb;box-shadow:0 15px 35px #2c4e2910;border-radius:20px;padding:25px;min-width:0}
+    .calc-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .calc-heading h3{font-size:16px}
+    .calc-heading>.icon{width:21px;height:21px;color:#658153}
+    .segmented{display:flex;gap:5px;background:#edf1e6;border-radius:11px;padding:5px}
+    .segmented button{flex:1;border:0;border-radius:8px;background:transparent;color:#67785e;font-size:12px;padding:9px 5px;min-height:43px}
+    .segmented button[aria-pressed=true]{background:var(--ink);color:white;box-shadow:0 3px 8px #143a2518}
+    .rate{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);margin:16px 0}
+    .rate b{font-weight:700;color:#345631}
+    .quantity-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:11px}
+    .quantity-heading label{font-weight:700}
+    .quantity-heading span{color:#73816c;font-size:10px}
+    .stepper{display:flex;align-items:center;border:1px solid #c7d7bb;border-radius:11px;background:white;padding:5px;gap:5px;direction:ltr}
+    .stepper button{width:41px;height:41px;border:0;border-radius:8px;background:#f0f5e8;color:#3c6434;display:grid;place-items:center;flex-shrink:0}
+    .stepper .icon{width:16px;height:16px}
+    .stepper input{width:100%;min-width:0;text-align:center;direction:ltr;border:0;background:transparent;color:var(--ink);padding:4px;font-size:20px;font-weight:700;outline-offset:0;box-shadow:none;border-radius:4px}
+    .stepper:has(input[aria-invalid=true]){border-color:#ab492e}
+    .presets{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+    .presets button{flex:1;background:transparent;border:1px solid #d9e2ce;border-radius:6px;color:#6d7e63;min-height:33px;padding:3px 7px;font-size:10px;white-space:nowrap}
+    .presets button[aria-pressed=true]{border-color:#92b273;background:#ebf4df;color:#2e582a}
+    .quantity-error{color:#a34027;font-size:10px;margin-top:7px;min-height:20px;line-height:1.9}
+    .calc-total{border-block:1px dashed #ccd9bf;padding:17px 0;margin:3px 0 18px}
+    .calc-total-label{color:#6a7b61;font-size:10px;display:flex;justify-content:space-between;gap:8px}
+    .calc-total-label span:last-child{font-size:10px;color:#738267}
+    .total-main{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-top:8px}
+    .total-main output{font-size:31px;line-height:1.5;letter-spacing:-1px;font-weight:700;overflow-wrap:anywhere;max-width:100%}
+    .total-main span{font-size:12px;color:#546e48}
+    .total-toman{font-size:12px;color:#708165;margin-top:1px}
+    .calc-formula{font-size:10px;color:#87917d;margin-top:10px;direction:rtl;line-height:2;overflow-wrap:anywhere}
+    .month-compare{color:#637b52;font-size:10px;margin-top:13px;line-height:2}
+    .faq-section{padding-top:3px;padding-bottom:75px;display:grid;grid-template-columns:.7fr 1.3fr;gap:65px;align-items:start}
+    .faq-intro h2{font-size:29px}
+    .faq-intro p{max-width:280px;line-height:2.1}
+    .faq-list{border-top:1px solid var(--line)}
+    .faq-item{padding:18px 0;border-bottom:1px solid var(--line)}
+    .faq-item summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:15px;font-size:13px;font-weight:700;min-height:28px}
+    .faq-item summary:after{content:"+";font:21px Vazirmatn,sans-serif;color:#728b65;flex-shrink:0}
+    .faq-item[open] summary:after{content:"−"}
+    .faq-item p{font-size:12px;line-height:2.2;color:var(--muted);margin:12px 0 2px}
+    .faq-item p+p{margin-top:7px}
+    .contact{background:var(--ink);border-radius:28px;padding:43px 46px;color:white;margin-bottom:25px}
+    .contact-header{display:flex;align-items:center;justify-content:space-between;gap:25px;margin-bottom:28px}
+    .contact .section-kicker{color:#bfd5a7;margin-bottom:6px}
+    .contact h2{font-size:29px;letter-spacing:-.7px}
+    .contact-header>p{color:#b9cfc0;font-size:12px;max-width:280px;line-height:2.1}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+    .contact-card{border:1px solid #ffffff24;border-radius:15px;padding:21px;display:flex;align-items:center;gap:15px;background:#ffffff05}
+    .contact-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:#ffffff0b;color:#e6f7d5;flex-shrink:0}
+    .contact-mark.divar{background:#ffcca81c;color:var(--peach);font-size:13px;font-weight:700}
+    .contact-card h3{font-size:14px;line-height:1.5}
+    .contact-card p{font-size:11px;color:#bfcec2;line-height:1.9;margin-top:5px}
+    .handle{font:16px/1.5 Vazirmatn,sans-serif!important;color:#e7f7d9!important;letter-spacing:.3px}
+    .contact-actions{display:flex;gap:8px;align-items:center;margin-right:auto}
+    .icon-button{width:36px;height:36px;background:#ffffff08;border:1px solid #ffffff25;color:#d5e5ca;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+    .icon-button .icon{width:16px;height:16px}
+    .contact-link{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;background:var(--mint);color:var(--ink);text-decoration:none}
+    .contact-link .icon{width:19px;height:19px;transform:rotate(35deg)}
+    .site-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:30px;color:#85907f;font-size:10px}
+    .site-footer a{text-decoration:none;color:#65785c;white-space:nowrap}
+    .welcome-hint{padding:28px 0 59px;text-align:center;color:var(--muted);font-size:13px}
+    .welcome-hint .icon{width:17px;height:17px;margin-left:7px;color:#7c9270}
+    dialog{border:1px solid #c9d7bd;border-radius:23px;width:min(490px,calc(100% - 32px));max-height:calc(100dvh - 40px);padding:28px;background:#fffef8;color:var(--ink);box-shadow:0 25px 100px #0003;overflow-y:auto}
+    dialog::backdrop{background:#0b241bb0;backdrop-filter:blur(6px)}
+    .dialog-head{display:flex;align-items:start;justify-content:space-between;gap:15px;margin-bottom:22px}
+    .dialog-head h2{font-size:21px}
+    .dialog-head p{font-size:11px;color:var(--muted);margin-top:4px}
+    .dialog-close{width:34px;height:34px;border-radius:50%;background:#edf2e6;border:0;color:#5b7350;display:grid;place-items:center;flex-shrink:0}
+    .dialog-close .icon{width:17px;height:17px}
+    .order-summary{margin:0 0 18px;border:1px solid #dae3ce;border-radius:12px;padding:5px 15px;background:#f1f5e9}
+    .order-summary>div{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:10px 0;border-bottom:1px solid #dce5d2;font-size:12px}
+    .order-summary>div:last-child{border:0}
+    .order-summary dt{color:#6a7c60}
+    .order-summary dd{margin:0;font-weight:700;text-align:left;overflow-wrap:anywhere;max-width:70%}
+    .message-label{font-size:11px;color:var(--muted);display:block;margin-bottom:7px}
+    .order-message{width:100%;resize:vertical;border:1px solid #d8e1cb;border-radius:10px;padding:12px;background:#fffefb;color:#58714b;font-size:12px;line-height:2;min-height:124px}
+    .dialog-actions{display:flex;gap:9px;margin-top:16px}
+    .dialog-actions .btn{flex:1;padding-inline:10px;font-size:12px}
+    .dialog-note{font-size:10px;line-height:2;color:#7a8b6f;margin-top:15px}
+    .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);border:1px solid #517047;background:var(--ink);color:#ecf7e4;border-radius:12px;padding:12px 23px;font-size:12px;z-index:50;box-shadow:0 6px 30px #0002;opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;max-width:calc(100% - 32px);text-align:center}
+    .toast.visible{opacity:1;transform:translate(-50%,0)}
+    .noscript{margin:30px auto;padding:24px;border:1px solid var(--line);border-radius:15px;background:white}
+    .noscript table{width:100%;border-collapse:collapse;margin-top:15px;font-size:12px}
+    .noscript th,.noscript td{text-align:right;padding:10px;border:1px solid var(--line)}
+    @media(min-width:1250px){.hero{gap:85px}}
+    @media(max-width:1050px){.hero{padding:37px;gap:35px}.provider-card{padding:23px}.plan{padding:24px 18px}.shared-shell{gap:30px;padding:30px}.shared-intro h2{font-size:32px}.account-option{font-size:10px;gap:6px}.account-option .option-price{font-size:10px}.contact{padding:35px}.contact-card{padding:17px;gap:11px}.nav{gap:20px}.price-number{font-size:39px}}
+    @media(max-width:820px){.wrap{width:calc(100% - 36px)}.hero{grid-template-columns:1fr 1fr;padding:28px;gap:25px}h1{font-size:34px;letter-spacing:-1px}.hero-copy>p{font-size:12px}.hero-pills{gap:5px}.hero-pill{font-size:9px;padding:4px 8px;gap:5px}.hero-pill b{font-size:11px}.provider-card{padding:21px}.provider-card h2{font-size:18px}.eyebrow{font-size:10px}.plans-grid{grid-template-columns:1fr;gap:18px}.plan{padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:0 30px}.plan .plan-head,.plan .plan-lead,.plan .feature-list,.plan .plan-details{grid-column:1}.plan fieldset,.plan .account-note,.plan .plan-bottom{grid-column:2}.plan fieldset{grid-row:1 / span 3}.plan .account-note{grid-row:4}.plan .plan-bottom{grid-row:5}.plan .plan-details{grid-row:4 / span 2;margin-bottom:0;align-self:start}.plan .plan-lead{min-height:auto}.plan-head{margin-bottom:16px}.plan .account-note{min-height:52px}.shared-shell{gap:22px;padding:25px}.shared-intro h2{font-size:27px}.privacy-callout{padding:16px;gap:9px}.privacy-callout h3{font-size:12px}.privacy-callout p{font-size:10px}.calculator{padding:21px}.faq-section{gap:35px}.faq-intro h2{font-size:25px}.contact-header>p{max-width:210px}.contact h2{font-size:25px}.contact-grid{gap:12px}.contact-card{flex-wrap:wrap}.contact-actions{margin-right:auto}.site-footer{font-size:9px}.journey{gap:18px}}
+    @media(max-width:620px){html{scroll-padding-top:20px}.wrap{width:calc(100% - 28px)}.site-header{height:81px;gap:12px}.brand{gap:9px}.brand-symbol{width:37px;height:37px;border-radius:11px}.brand-title{font-size:13px}.brand-subtitle{font-size:8px;letter-spacing:1.5px}.nav{gap:0}.nav>a:not(.contact-nav){display:none}.nav .contact-nav{font-size:10px;padding:6px 11px;gap:6px}.nav .contact-nav .icon{width:15px;height:15px}.hero{grid-template-columns:1fr;border-radius:23px;padding:30px 23px;gap:31px}.eyebrow{margin-bottom:17px;font-size:10px}h1{font-size:39px;line-height:1.65;letter-spacing:-1.4px}.hero-copy>p{font-size:12px;line-height:2.15;margin-top:16px;max-width:360px}.hero-pills{margin-top:19px;gap:7px}.hero-pill{font-size:10px;padding:4px 8px;gap:7px}.provider-card{padding:22px;border-radius:17px}.provider-card h2{font-size:19px;margin-bottom:18px}.card-topline{margin-bottom:13px}.provider-preview{margin:15px 0 18px}.journey{gap:10px;padding:23px 0;font-size:9px;justify-content:space-between}.journey span{gap:5px}.journey b{width:19px;height:19px;font-size:9px}.journey>.icon{width:11px;height:11px}.section{padding-block:34px}.section-head{align-items:start;gap:16px;margin-bottom:23px;flex-direction:column}.section-head h2{font-size:26px}.section-head p{font-size:11px;line-height:2}.provider-badge{padding:5px 11px;font-size:10px}.provider-badge button{font-size:9px}.plan{display:flex;padding:25px;gap:0;border-radius:20px}.plan h3{font-size:32px}.plan-head{margin-bottom:12px}.plan-lead{font-size:12px;margin-bottom:18px}.feature-list{font-size:12px;gap:8px}.plan .plan-details{margin-bottom:20px;align-self:auto}.account-option{font-size:12px;padding:10px 11px;gap:9px}.account-option .option-price{font-size:11px}.plan .account-note{min-height:0;margin:9px 0 16px;font-size:10px}.price-number{font-size:43px}.plan-bottom{margin-top:9px}.pricing-note{font-size:10px;line-height:2.1}.shared-section{padding-top:18px;padding-bottom:46px}.shared-shell{grid-template-columns:1fr;border-radius:22px;padding:24px 17px;gap:25px}.shared-intro{padding:0 3px}.shared-intro h2{font-size:32px;margin:15px 0}.shared-intro>p{font-size:12px}.privacy-callout{padding:17px;margin-top:21px}.privacy-callout h3{font-size:13px}.privacy-callout p{font-size:11px}.calculator{padding:21px;border-radius:17px}.calc-heading h3{font-size:15px}.total-main output{font-size:30px}.faq-section{grid-template-columns:1fr;gap:22px;padding-top:0;padding-bottom:47px}.faq-intro h2{font-size:26px}.faq-intro p{max-width:none;font-size:11px}.faq-item summary{font-size:12px}.faq-item p{font-size:11px}.contact{padding:29px 22px;border-radius:22px}.contact-header{display:block;margin-bottom:23px}.contact h2{font-size:26px}.contact-header>p{max-width:none;font-size:11px;margin-top:12px}.contact-grid{grid-template-columns:1fr;gap:12px}.contact-card{padding:17px;flex-wrap:nowrap}.contact-card p{font-size:10px}.contact-card h3{font-size:13px}.contact-mark{width:39px;height:39px}.contact-actions{gap:6px}.icon-button,.contact-link{width:33px;height:33px}.site-footer{align-items:start;gap:15px;font-size:9px;line-height:2}.site-footer p{max-width:235px}.welcome-hint{font-size:11px;padding:10px 10px 37px}.dialog-actions{flex-direction:column}dialog{padding:23px}.dialog-head h2{font-size:20px}.toast{bottom:17px;font-size:11px;padding:10px 17px}}
+    @media(max-width:355px){h1{font-size:32px}.hero{padding:26px 18px}.provider-card{padding:18px}.brand-subtitle{letter-spacing:.6px}.nav .contact-nav{padding:6px 9px}.contact-card{gap:9px}.contact-actions{gap:4px}.icon-button,.contact-link{width:30px;height:30px}.journey{font-size:8px;gap:5px}.journey b{width:17px;height:17px}.total-main output{font-size:26px}.account-option{font-size:11px}.shared-intro h2{font-size:29px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+    @media print{.nav,.provider-card,.journey,.btn,.contact-actions,.toast,dialog,.welcome-hint{display:none!important}[data-service-content]{display:block!important}.hero{display:block;padding:25px;background:white;color:var(--ink);border:1px solid #ccc}.hero-copy>p,h1 em{color:var(--ink)}.hero-pills{display:none}.plans-grid{display:block}.plan{break-inside:avoid;box-shadow:none;margin-bottom:20px;background:white!important;color:var(--ink)!important}.featured *{color:var(--ink)!important}.shared-shell{display:block}.calculator{margin-top:20px}.contact{background:white;color:var(--ink);border:1px solid #ccc}.contact p,.contact .handle{color:var(--ink)!important}.section{padding-block:25px}.faq-section{display:block}.wrap{width:100%}.site-header{height:65px}}
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4L12 2Z"/><path d="m20 2 .5 1.5L22 4l-1.5.5L20 6l-.5-1.5L18 4l1.5-.5L20 2Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 10 10 0 0 1-4-.9L3 21l1.5-4.6A8.5 8.5 0 1 1 20 11.5Z"/><path d="M8 10h7m-7 4h4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4.5-8 9-8 9s-8-4.5-8-9V6l8-3Z"/><path d="m8.5 11.5 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v5m8-5v5M4 11h16m-11 5h.01M14 16h.01"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m21 3-7 18-4-7-7-4L21 3Z"/><path d="m10 14 5-5"/></symbol>
+  </svg>
+
+  <a class="skip" href="#main">رفتن به محتوای اصلی</a>
+  <header class="site-header wrap">
+    <a href="#choose" class="brand" aria-label="اشتراک هوش مصنوعی، ابتدای صفحه">
+      <span class="brand-symbol"><svg class="icon big" aria-hidden="true"><use href="#i-spark"/></svg></span>
+      <span><span class="brand-title">اشتراک هوش مصنوعی</span><span class="brand-subtitle" dir="ltr">AI SUBSCRIPTIONS</span></span>
+    </a>
+    <nav class="nav" aria-label="ناوبری اصلی">
+      <a href="#plans" data-service-nav hidden>مقایسه پلن‌ها</a>
+      <a href="#shared" data-service-nav hidden>حساب اشتراکی</a>
+      <a href="#contact" class="contact-nav">ارتباط با ما <svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" id="choose" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="dot"></span> برای یادگیری، ساختن و ایده‌های تازه</div>
+        <h1 id="heroTitle">یک انتخاب هوشمند،<br><em>امکاناتی فراتر.</em></h1>
+        <p>از کارهای روزمره تا پروژه‌های تخصصی؛ سرویس هوش مصنوعی خود را انتخاب کنید و اشتراک مناسب نیازتان را پیدا کنید.</p>
+        <div class="hero-pills" aria-label="پلن‌های ارائه‌شده">
+          <span class="hero-pill"><b lang="en">Go</b> استفاده روزمره</span>
+          <span class="hero-pill"><b lang="en">Plus</b> کار حرفه‌ای</span>
+          <span class="hero-pill"><b lang="en">Pro</b> استفاده سنگین</span>
+        </div>
+      </div>
+      <form class="provider-card" id="providerForm">
+        <div class="card-topline"><span class="step-tag">گام اول</span><span dir="ltr" class="english">01 / SELECT AI</span></div>
+        <h2>از کدام هوش مصنوعی<br>شروع می‌کنید؟</h2>
+        <label class="input-label" for="provider">سرویس هوش مصنوعی</label>
+        <div class="select-shell">
+          <select id="provider" name="provider" required aria-describedby="providerHint">
+            <option value="">یک سرویس انتخاب کنید</option>
+            <option value="chatgpt">ChatGPT — چت‌جی‌پی‌تی</option>
+          </select>
+          <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>
+        </div>
+        <div class="provider-preview" id="providerPreview">
+          <span class="provider-mark"><svg class="icon big" aria-hidden="true"><use href="#i-spark"/></svg></span>
+          <div><span class="provider-name english" lang="en">ChatGPT</span><p>سه پلن، متناسب با نیاز شما</p></div>
+          <svg class="icon provider-check" aria-hidden="true"><use href="#i-check"/></svg>
+        </div>
+        <button class="btn full" type="submit" id="showPlans" disabled>مشاهده پلن‌ها و قیمت‌ها <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <p class="provider-footnote" id="providerHint">در حال حاضر، اطلاعات پلن‌های ChatGPT ارائه شده است.</p>
+      </form>
+    </section>
+    <div class="journey wrap" aria-label="مراحل انتخاب اشتراک">
+      <span><b>۱</b> انتخاب سرویس</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+      <span><b>۲</b> انتخاب پلن و نوع حساب</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+      <span><b>۳</b> هماهنگی خرید</span>
+    </div>
+    <p class="welcome-hint wrap" id="welcomeHint"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>برای دیدن قیمت‌ها و محاسبه هزینه، ابتدا سرویس را انتخاب کنید.</p>
+
+    <section class="section wrap" id="plans" aria-labelledby="plansTitle" data-service-content hidden>
+      <div class="section-head">
+        <div><span class="section-kicker">انتخابی متناسب با کار شما</span><h2 id="plansTitle" tabindex="-1">اشتراک مناسب شما کدام است؟</h2><p>امکانات را مقایسه کنید، نوع حساب را انتخاب کنید و برای خرید با ما در ارتباط باشید.</p></div>
+        <div class="provider-badge"><span class="dot"></span><b class="english" lang="en">ChatGPT</b><button type="button" id="changeProvider">تغییر سرویس</button></div>
+      </div>
+      <div class="plans-grid">
+        <article class="plan" aria-labelledby="goTitle">
+          <div class="plan-head"><h3 id="goTitle" class="english" lang="en" dir="ltr">Go<span class="sr-only"> ChatGPT</span></h3><span class="plan-tag">اقتصادی و کاربردی</span></div>
+          <p class="plan-lead">یک قدم فراتر از نسخه رایگان؛ برای یادگیری و کارهای روزمره.</p>
+          <ul class="feature-list">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>گفت‌وگو، ترجمه و یادگیری</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>خلاصه‌سازی و تولید محتوای سبک</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>ایده‌پردازی و بارگذاری فایل</li>
+          </ul>
+          <details class="plan-details"><summary>بیشتر درباره ChatGPT Go</summary><p>ChatGPT Go اقتصادی‌ترین پلن پولی ChatGPT است و برای کاربرانی طراحی شده که به امکانات بیشتری نسبت به نسخه رایگان نیاز دارند، اما استفاده آن‌ها به اندازه‌ای نیست که به ظرفیت و قابلیت‌های کامل ChatGPT Plus احتیاج داشته باشند. این پلن برای گفت‌وگو، ترجمه، یادگیری، خلاصه‌سازی، تولید محتوای سبک، ایده‌پردازی، بارگذاری فایل و استفاده روزمره، تجربه‌ای کامل‌تر از نسخه رایگان ارائه می‌دهد.</p></details>
+          <fieldset><legend>نوع حساب</legend>
+            <label class="account-option"><input type="radio" name="goAccount" value="new" checked><span>حساب جدید (اختصاصی)</span><span class="option-price">۱۰ دلار</span></label>
+            <label class="account-option"><input type="radio" name="goAccount" value="personal"><span>حساب شخصی شما</span><span class="option-price">۱۰ دلار</span></label>
+          </fieldset>
+          <p class="account-note" id="goAccountNote" aria-live="polite">یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.</p>
+          <div class="plan-bottom"><div class="price-row"><strong class="price-number">10</strong><span class="price-unit">دلار</span><span class="price-extra">هر دو نوع حساب</span></div><button class="btn outline full" type="button" data-order="go">انتخاب اشتراک Go <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+        </article>
+
+        <article class="plan featured" aria-labelledby="plusTitle">
+          <div class="plan-head"><h3 id="plusTitle" class="english" lang="en" dir="ltr">Plus<span class="sr-only"> ChatGPT</span></h3><span class="plan-tag">برای کار حرفه‌ای</span></div>
+          <p class="plan-lead">برای کسانی که هر روز با هوش مصنوعی کار می‌کنند و می‌سازند.</p>
+          <ul class="feature-list">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>تولید محتوا، سئو و برنامه‌نویسی</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>تحلیل فایل‌های PDF، Excel، Word و CSV</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>ساخت و ویرایش تصویر و تحقیق</li>
+          </ul>
+          <details class="plan-details"><summary>بیشتر درباره ChatGPT Plus</summary><p>ChatGPT Plus برای متخصصان سئو، تولیدکنندگان محتوا، برنامه‌نویسان، دانشجویان، پژوهشگران، فریلنسرها و مدیران کسب‌وکار مناسب است؛ به‌ویژه افرادی که هر روز از ChatGPT استفاده می‌کنند یا محدودیت‌های نسخه رایگان و Go پاسخ‌گوی نیازشان نیست. این پلن برای تولید محتوای حرفه‌ای، رفع خطای کد، تحلیل فایل‌های PDF، Excel، Word و CSV، ساخت و ویرایش تصویر و انجام تحقیقات مستمر انتخاب مناسبی محسوب می‌شود.</p></details>
+          <fieldset><legend>نوع حساب</legend>
+            <label class="account-option"><input type="radio" name="plusAccount" value="new" checked><span>حساب جدید (اختصاصی)</span><span class="option-price">۲۴ دلار</span></label>
+            <label class="account-option"><input type="radio" name="plusAccount" value="personal"><span>حساب شخصی شما</span><span class="option-price">۲۴ دلار</span></label>
+            <label class="account-option"><input type="radio" name="plusAccount" value="shared"><span>حساب اشتراکی</span><span class="option-price">روزانه / ماهانه</span></label>
+          </fieldset>
+          <p class="account-note" id="plusAccountNote" aria-live="polite">یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.</p>
+          <div class="plan-bottom"><div class="price-row" id="plusPriceRow"><strong class="price-number" id="plusPrice">24</strong><span class="price-unit" id="plusUnit">دلار</span><span class="price-extra" id="plusExtra">جدید یا شخصی</span></div><button class="btn light full" type="button" data-order="plus" id="plusOrder">انتخاب اشتراک Plus <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+        </article>
+
+        <article class="plan pro" aria-labelledby="proTitle">
+          <div class="plan-head"><h3 id="proTitle" class="english" lang="en" dir="ltr">Pro<span class="sr-only"> ChatGPT</span></h3><span class="plan-tag">برای استفاده سنگین</span></div>
+          <p class="plan-lead">برای پروژه‌های عمیق، کار تخصصی و استفاده مداوم.</p>
+          <ul class="feature-list">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>ظرفیت استفاده بالاتر نسبت به Plus</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>دسترسی گسترده‌تر به ابزارهای پیشرفته</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>مناسب کارهای تخصصی و مستمر</li>
+          </ul>
+          <details class="plan-details"><summary>بیشتر درباره ChatGPT Pro</summary><p>ChatGPT Pro برای کاربرانی طراحی شده است که استفاده بسیار سنگین، تخصصی یا مداوم از ChatGPT دارند. این پلن در مقایسه با Plus، ظرفیت استفاده بالاتر و دسترسی گسترده‌تری به مدل‌ها و ابزارهای پیشرفته ارائه می‌دهد.</p><div class="model-note">دسترسی به مدل‌هایی مانند <bdi>GPT-6 Astra</bdi> در Work و Codex به سطح طرح و شرایط روز سرویس وابسته است. فهرست مدل‌های در دسترس در بخش Chat نیز هنگام خرید بررسی می‌شود. <a href="https://learn.chatgpt.com/docs/models" target="_blank" rel="noopener noreferrer">راهنمای رسمی مدل‌ها</a></div></details>
+          <fieldset><legend>نوع حساب</legend>
+            <label class="account-option"><input type="radio" name="proAccount" value="new" checked><span>حساب جدید (اختصاصی)</span><span class="option-price">۱۰۶ دلار</span></label>
+            <label class="account-option"><input type="radio" name="proAccount" value="personal"><span>حساب شخصی شما</span><span class="option-price">۱۰۶ دلار</span></label>
+          </fieldset>
+          <p class="account-note" id="proAccountNote" aria-live="polite">یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.</p>
+          <div class="plan-bottom"><div class="price-row"><strong class="price-number">106</strong><span class="price-unit">دلار</span><span class="price-extra">هر دو نوع حساب</span></div><button class="btn outline full" type="button" data-order="pro">انتخاب اشتراک Pro <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+        </article>
+      </div>
+      <p class="pricing-note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>قیمت‌ها تعرفه فروش ارائه‌دهنده هستند. مدت اعتبار طرح‌های دلاری و نرخ تبدیل به ریال، هنگام هماهنگی خرید مشخص می‌شود. امکانات مدل‌ها تابع شرایط روز سرویس است.</span></p>
+    </section>
+
+    <section class="shared-section wrap" id="shared" aria-labelledby="sharedTitle" data-service-content hidden>
+      <div class="shared-shell">
+        <div class="shared-intro">
+          <span class="small-badge"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>حساب اشتراکی ChatGPT Plus</span>
+          <h2 id="sharedTitle">پلاس، فقط به<br>اندازهٔ نیاز شما.</h2>
+          <p>یک روز برای ایده‌پردازی یا یک ماه برای کار مستمر؟ مدت دلخواه را انتخاب کنید و هزینه را همان لحظه ببینید. دسترسی با توکن فعال‌سازی و از طریق افزونه ارائه می‌شود.</p>
+          <div class="privacy-callout">
+            <span class="privacy-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></span>
+            <div><h3>چت‌ها و پروژه‌های تفکیک‌شده</h3><p>طبق توضیحات ارائه‌دهنده، افزونه برای تفکیک چت‌ها و پروژه‌های هر کاربر طراحی شده است. جزئیات دسترسی و حریم خصوصی به سازوکار افزونه و مدیریت حساب وابسته است.</p></div>
+          </div>
+          <p class="privacy-footnote">پیش از خرید، شرایط حریم خصوصی و دسترسی افزونه را از پشتیبانی دریافت کنید.</p>
+        </div>
+        <div class="calculator" aria-labelledby="calcTitle">
+          <div class="calc-heading"><h3 id="calcTitle">هزینه اشتراک شما</h3><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg></div>
+          <div class="segmented" role="group" aria-label="روش محاسبه هزینه">
+            <button type="button" data-cycle="day" aria-pressed="true">روزانه</button>
+            <button type="button" data-cycle="month" aria-pressed="false">ماهانه</button>
+          </div>
+          <div class="rate"><span id="rateLabel">تعرفه هر روز</span><b id="rateValue">۳۵٬۰۰۰ تومان</b></div>
+          <div class="quantity-heading"><label for="quantity" id="quantityLabel">چند روز نیاز دارید؟</label><span id="quantityHint">یک عدد صحیح وارد کنید</span></div>
+          <div class="stepper">
+            <button type="button" id="decrease" aria-label="یک روز کمتر"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input id="quantity" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="7" maxlength="12" pattern="[0-9۰-۹٠-٩]+" aria-describedby="quantityHint quantityError" aria-invalid="false">
+            <button type="button" id="increase" aria-label="یک روز بیشتر"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <div class="presets" id="presets" role="group" aria-label="مدت‌های پیشنهادی"></div>
+          <p class="quantity-error" id="quantityError" aria-live="polite"></p>
+          <div class="calc-total" aria-live="polite" aria-atomic="true">
+            <div class="calc-total-label"><span>مبلغ قابل پرداخت</span><span id="durationLabel">برای ۷ روز</span></div>
+            <div class="total-main"><output id="totalRial" for="quantity">۲٬۴۵۰٬۰۰۰</output><span>ریال</span></div>
+            <div class="total-toman">معادل <output id="totalToman" for="quantity">۲۴۵٬۰۰۰</output> تومان</div>
+            <p class="calc-formula" id="formula">۷ روز × ۳۵۰٬۰۰۰ ریال</p>
+          </div>
+          <button type="button" class="btn full" data-order="shared" id="sharedOrder">هماهنگی برای این اشتراک <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+          <p class="month-compare" id="monthCompare">تعرفه ماهانه: ۱٬۰۰۰٬۰۰۰ تومان. برای مقایسه، گزینه «ماهانه» را انتخاب کنید.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq-section wrap" aria-labelledby="faqTitle" data-service-content hidden>
+      <div class="faq-intro"><span class="section-kicker">پاسخ چند پرسش کوتاه</span><h2 id="faqTitle">قبل از انتخاب، بدانید.</h2><p>اگر برای انتخاب پلن یا روش فعال‌سازی راهنمایی می‌خواهید، از طریق ایتا یا همان چت دیوار با ما صحبت کنید.</p></div>
+      <div class="faq-list">
+        <details class="faq-item"><summary>حساب اختصاصی و حساب شخصی چه تفاوتی دارند؟</summary><p>در حساب جدید یا اختصاصی، یک توکن فعال‌سازی در اختیار شما قرار می‌گیرد و دسترسی از طریق افزونه برای شما فعال می‌شود. در حساب شخصی، اشتراک روی حساب فعلی خودتان فعال می‌شود؛ برای هماهنگی مراحل فعال‌سازی با پشتیبانی تماس بگیرید.</p><p>ایمیل حساب را فقط در صورت نیاز برای هماهنگی ارائه کنید. رمز عبور، کد ورود، کوکی، سشن یا توکن ورود حساب شخصی خود را برای دیگران ارسال نکنید.</p></details>
+        <details class="faq-item"><summary>حساب اشتراکی برای کدام پلن ارائه می‌شود؟</summary><p>در این فهرست، حساب اشتراکی فقط برای ChatGPT Plus ارائه شده است و می‌توانید تعرفه روزانه یا ماهانه را انتخاب کنید. دسترسی با توکن فعال‌سازی از طریق افزونه انجام می‌شود. افزونه، طبق توضیحات ارائه‌دهنده، چت‌ها و پروژه‌های کاربران را تفکیک می‌کند؛ تفکیک چت‌ها به‌تنهایی به معنی تضمین حریم خصوصی کامل نیست.</p></details>
+        <details class="faq-item"><summary>مبلغ‌ها به ریال هستند یا تومان؟</summary><p>قیمت حساب‌های جدید و شخصی به دلار درج شده است. حساب اشتراکی روزانه ۳۵٬۰۰۰ تومان، معادل ۳۵۰٬۰۰۰ ریال، و ماهانه ۱٬۰۰۰٬۰۰۰ تومان، معادل ۱۰٬۰۰۰٬۰۰۰ ریال است. محاسبه‌گر هر دو واحد را نمایش می‌دهد. هر تومان برابر با ۱۰ ریال است.</p></details>
+        <details class="faq-item"><summary>قیمت دلاری برای چه مدت است و خرید چگونه انجام می‌شود؟</summary><p>مدت اعتبار طرح‌های دلاری در این فهرست مشخص نشده است؛ پیش از خرید، مدت اعتبار و جزئیات فعال‌سازی را با پشتیبانی هماهنگ کنید. با انتخاب هر پلن، خلاصه درخواست آماده می‌شود تا آن را کپی کرده و در ایتا یا همان گفت‌وگوی دیوار ارسال کنید.</p></details>
+      </div>
+    </section>
+
+    <noscript><section class="noscript wrap"><h2>پلن‌ها و قیمت‌ها</h2><p>برای انتخاب تعاملی سرویس و استفاده از محاسبه‌گر، جاوااسکریپت مرورگر را فعال کنید.</p><table><thead><tr><th>پلن</th><th>حساب جدید</th><th>حساب شخصی</th></tr></thead><tbody><tr><td>ChatGPT Go</td><td>۱۰ دلار</td><td>۱۰ دلار</td></tr><tr><td>ChatGPT Plus</td><td>۲۴ دلار</td><td>۲۴ دلار</td></tr><tr><td>ChatGPT Pro</td><td>۱۰۶ دلار</td><td>۱۰۶ دلار</td></tr></tbody></table><p>حساب اشتراکی Plus: روزانه ۳۵۰٬۰۰۰ ریال (۳۵٬۰۰۰ تومان)، ماهانه ۱۰٬۰۰۰٬۰۰۰ ریال (۱٬۰۰۰٬۰۰۰ تومان). مدت اعتبار طرح‌های دلاری هنگام هماهنگی خرید اعلام می‌شود.</p></section></noscript>
+  </main>
+
+  <section class="contact wrap" id="contact" aria-labelledby="contactTitle">
+    <div class="contact-header"><div><span class="section-kicker">راه‌های ارتباطی ما</span><h2 id="contactTitle">انتخاب کردید؟ صحبت کنیم.</h2></div><p>برای راهنمایی، اطلاع از جزئیات فعال‌سازی و هماهنگی خرید، پیام بدهید.</p></div>
+    <div class="contact-grid">
+      <div class="contact-card"><span class="contact-mark"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg></span><div><h3>گفت‌وگو در ایتا</h3><p class="handle" dir="ltr">@ar12766</p></div><div class="contact-actions"><button class="icon-button" type="button" id="copyHandle" aria-label="کپی نام کاربری ایتا"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button><a href="https://eitaa.com/ar12766" class="contact-link" target="_blank" rel="noopener noreferrer" aria-label="باز کردن گفت‌وگو با ar12766 در ایتا"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div>
+      <div class="contact-card"><span class="contact-mark divar">دیوار</span><div><h3>از دیوار آمده‌اید؟</h3><p>در همان چتِ آگهی دیوار پیام بدهید.</p></div></div>
+    </div>
+  </section>
+  <footer class="site-footer wrap"><p>اشتراک‌های هوش مصنوعی · قیمت‌ها بر اساس تعرفه ارائه‌دهنده درج شده‌اند.</p><a href="#choose">بازگشت به بالا ↑</a></footer>
+
+  <dialog id="orderDialog" aria-labelledby="orderTitle" aria-describedby="orderIntro">
+    <div class="dialog-head"><div><h2 id="orderTitle">انتخاب شما آماده است.</h2><p id="orderIntro">خلاصه درخواست را کپی کنید و برای هماهنگی پیام بدهید.</p></div><button class="dialog-close" type="button" id="closeDialog" aria-label="بستن پنجره"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+    <dl class="order-summary"><div><dt>اشتراک</dt><dd id="summaryPlan"></dd></div><div><dt>نوع حساب</dt><dd id="summaryAccount"></dd></div><div><dt>مدت</dt><dd id="summaryDuration"></dd></div><div><dt>قیمت</dt><dd id="summaryPrice"></dd></div></dl>
+    <label class="message-label" for="orderMessage">متن آماده برای ارسال</label>
+    <textarea class="order-message" id="orderMessage" readonly rows="4"></textarea>
+    <div class="dialog-actions"><button class="btn" type="button" id="copyOrder"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>کپی درخواست</button><a class="btn outline" href="https://eitaa.com/ar12766" target="_blank" rel="noopener noreferrer">گفت‌وگو در ایتا <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+    <p class="dialog-note">در دیوار، همین متن را در همان چتِ آگهی ارسال کنید. ارسال پیام و هماهنگی خرید با انتخاب شما انجام می‌شود.</p>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    'use strict';
+    /* تنظیم قیمت‌ها: مبالغ دلاری، دلار هستند؛ تعرفه‌های اشتراکی، ریال هستند.
+       برای افزودن سرویس‌های دیگر، ابتدا اطلاعات واقعی آن سرویس را اضافه کنید. */
+    const PRICES = Object.freeze({go:10, plus:24, pro:106, dayRial:350000, monthRial:10000000});
+    const ACCOUNT_NOTES = Object.freeze({
+      new:'یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.',
+      personal:'اشتراک روی حساب فعلی شما فعال می‌شود. مراحل را با پشتیبانی هماهنگ کنید؛ رمز عبور، کد ورود یا اطلاعات سشن حساب خود را ارسال نکنید.',
+      shared:'دسترسی با توکن فعال‌سازی از طریق افزونه ارائه می‌شود. برای انتخاب مدت و مشاهده مبلغ، از محاسبه‌گر زیر استفاده کنید.'
+    });
+    const $ = id => document.getElementById(id);
+    const fa = value => new Intl.NumberFormat('fa-IR', {maximumFractionDigits:0}).format(value);
+    const normalizeDigits = value => String(value).replace(/[۰-۹]/g, n => String(n.charCodeAt(0)-1776)).replace(/[٠-٩]/g, n => String(n.charCodeAt(0)-1632)).trim();
+
+    // تابع مستقل برای محاسبه: روزانه و ماهانه جدا محاسبه می‌شوند؛ تبدیل خودکار مدت انجام نمی‌شود.
+    function calculateQuote(cycle, rawQuantity) {
+      if (cycle !== 'day' && cycle !== 'month') return null;
+      const normalized = normalizeDigits(rawQuantity);
+      if (!/^\d+$/.test(normalized)) return null;
+      const count = Number(normalized);
+      const rate = cycle === 'day' ? PRICES.dayRial : PRICES.monthRial;
+      const rial = count * rate;
+      if (!Number.isSafeInteger(count) || count < 1 || !Number.isSafeInteger(rial)) return null;
+      return {cycle, count, rate, rial, toman:rial/10, unit:cycle === 'day' ? 'روز' : 'ماه'};
+    }
+
+    let cycle = 'day';
+    const quantities = {day:'7', month:'1'};
+    let toastTimer;
+    let lastOrderButton;
+
+    function notify(message) {
+      clearTimeout(toastTimer);
+      $('toast').textContent = message;
+      $('toast').classList.add('visible');
+      toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 3200);
+    }
+
+    function updateProvider() {
+      const selected = $('provider').value === 'chatgpt';
+      $('showPlans').disabled = !selected;
+      $('providerPreview').classList.toggle('selected', selected);
+    }
+    $('provider').addEventListener('change', updateProvider);
+    $('providerForm').addEventListener('submit', event => {
+      event.preventDefault();
+      if ($('provider').value !== 'chatgpt') return;
+      document.querySelectorAll('[data-service-content], [data-service-nav]').forEach(item => {item.hidden = false;});
+      $('welcomeHint').hidden = true;
+      $('plansTitle').focus({preventScroll:true});
+      $('plans').scrollIntoView({block:'start'});
+    });
+    $('changeProvider').addEventListener('click', () => {
+      $('choose').scrollIntoView({block:'start'});
+      $('provider').focus({preventScroll:true});
+    });
+
+    function accountChoice(plan) {
+      return document.querySelector('input[name="'+plan+'Account"]:checked').value;
+    }
+    function updateAccount(plan) {
+      const choice = accountChoice(plan);
+      $(plan+'AccountNote').textContent = ACCOUNT_NOTES[choice];
+      if (plan === 'plus') {
+        const shared = choice === 'shared';
+        $('plusPrice').textContent = shared ? fa(PRICES.dayRial) : String(PRICES.plus);
+        $('plusUnit').textContent = shared ? 'ریال / روز' : 'دلار';
+        $('plusExtra').textContent = shared ? fa(PRICES.dayRial/10)+' تومان' : 'جدید یا شخصی';
+        $('plusPriceRow').classList.toggle('shared-price', shared);
+        $('plusOrder').firstChild.textContent = shared ? 'محاسبه هزینه دلخواه ' : 'انتخاب اشتراک Plus ';
+      }
+    }
+    ['go','plus','pro'].forEach(plan => {
+      const inputs = document.querySelectorAll('input[name="'+plan+'Account"]');
+      inputs.forEach(radio => {
+        const price = radio.closest('label').querySelector('.option-price');
+        if (radio.value !== 'shared') price.textContent = fa(PRICES[plan])+' دلار';
+        radio.addEventListener('change', () => updateAccount(plan));
+      });
+      if (plan !== 'plus') inputs[0].closest('.plan').querySelector('.price-number').textContent = String(PRICES[plan]);
+      updateAccount(plan);
+    });
+
+    function renderPresets() {
+      const values = cycle === 'day' ? [1,7,14,30] : [1,2,3,6];
+      const unit = cycle === 'day' ? 'روز' : 'ماه';
+      $('presets').replaceChildren();
+      values.forEach(count => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.quantity = String(count);
+        button.textContent = fa(count)+' '+unit;
+        button.setAttribute('aria-pressed','false');
+        button.addEventListener('click', () => {
+          $('quantity').value = fa(count);
+          updateCalculator();
+        });
+        $('presets').appendChild(button);
+      });
+    }
+
+    function updateCalculator() {
+      quantities[cycle] = $('quantity').value;
+      const quote = calculateQuote(cycle, $('quantity').value);
+      const isDay = cycle === 'day';
+      const unit = isDay ? 'روز' : 'ماه';
+      $('rateLabel').textContent = 'تعرفه هر '+unit;
+      $('rateValue').textContent = fa((isDay ? PRICES.dayRial : PRICES.monthRial)/10)+' تومان';
+      $('quantityLabel').textContent = isDay ? 'چند روز نیاز دارید؟' : 'چند ماه نیاز دارید؟';
+      $('decrease').setAttribute('aria-label','یک '+unit+' کمتر');
+      $('increase').setAttribute('aria-label','یک '+unit+' بیشتر');
+      $('quantity').setAttribute('aria-invalid',String(!quote));
+      $('quantityError').textContent = quote ? '' : 'تعداد را به‌صورت عدد صحیح و بزرگ‌تر از صفر وارد کنید.';
+      $('sharedOrder').disabled = !quote;
+      $('decrease').disabled = !!quote && quote.count <= 1;
+      $('increase').disabled = !!quote && !calculateQuote(cycle,String(quote.count+1));
+      $('totalRial').textContent = quote ? fa(quote.rial) : '—';
+      $('totalToman').textContent = quote ? fa(quote.toman) : '—';
+      $('durationLabel').textContent = quote ? 'برای '+fa(quote.count)+' '+unit : 'مدت نامعتبر';
+      $('formula').textContent = quote ? fa(quote.count)+' '+unit+' × '+fa(quote.rate)+' ریال' : 'مبلغ پس از وارد کردن تعداد معتبر محاسبه می‌شود.';
+      $('monthCompare').textContent = isDay ? 'تعرفه ماهانه: '+fa(PRICES.monthRial/10)+' تومان. برای مقایسه، گزینه «ماهانه» را انتخاب کنید.' : 'هر ماه با تعرفه ثابت '+fa(PRICES.monthRial)+' ریال محاسبه می‌شود.';
+      document.querySelectorAll('[data-quantity]').forEach(button => button.setAttribute('aria-pressed',String(!!quote && Number(button.dataset.quantity) === quote.count)));
+      document.querySelectorAll('[data-cycle]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.cycle === cycle)));
+    }
+
+    document.querySelectorAll('[data-cycle]').forEach(button => {
+      button.addEventListener('click', () => {
+        quantities[cycle] = $('quantity').value;
+        cycle = button.dataset.cycle;
+        $('quantity').value = quantities[cycle];
+        renderPresets();
+        updateCalculator();
+      });
+    });
+    $('quantity').addEventListener('input', updateCalculator);
+    $('quantity').addEventListener('blur', () => {
+      const quote = calculateQuote(cycle,$('quantity').value);
+      if (quote) $('quantity').value = fa(quote.count).replace(/[٬\s]/g,'');
+      updateCalculator();
+    });
+    $('quantity').addEventListener('keydown', event => {
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        changeQuantity(event.key === 'ArrowUp' ? 1 : -1);
+      }
+    });
+    function changeQuantity(delta) {
+      const quote = calculateQuote(cycle, $('quantity').value);
+      const next = quote ? Math.max(1,quote.count+delta) : 1;
+      if (!calculateQuote(cycle,String(next))) return;
+      $('quantity').value = fa(next).replace(/[٬\s]/g,'');
+      updateCalculator();
+    }
+    $('decrease').addEventListener('click', () => changeQuantity(-1));
+    $('increase').addEventListener('click', () => changeQuantity(1));
+
+    function openOrder(plan, trigger) {
+      if (plan === 'plus' && accountChoice('plus') === 'shared') {
+        $('shared').scrollIntoView({block:'start'});
+        $('quantity').focus({preventScroll:true});
+        return;
+      }
+      let title, account, duration, price, message;
+      if (plan === 'shared') {
+        const quote = calculateQuote(cycle,$('quantity').value);
+        if (!quote) { $('quantity').focus(); return; }
+        title = 'ChatGPT Plus';
+        account = 'اشتراکی (از طریق افزونه)';
+        duration = fa(quote.count)+' '+quote.unit;
+        price = fa(quote.rial)+' ریال ('+fa(quote.toman)+' تومان)';
+        message = 'سلام، برای تهیه حساب اشتراکی ChatGPT Plus به مدت '+duration+' با تعرفه '+(cycle === 'day' ? 'روزانه' : 'ماهانه')+' و مبلغ '+price+' راهنمایی می‌خواهم. لطفاً شرایط فعال‌سازی و حریم خصوصی را اعلام کنید.';
+      } else {
+        title = 'ChatGPT '+({go:'Go',plus:'Plus',pro:'Pro'}[plan]);
+        account = accountChoice(plan) === 'personal' ? 'حساب شخصی خودم' : 'حساب جدید (اختصاصی)';
+        duration = 'نیازمند هماهنگی با پشتیبانی';
+        price = fa(PRICES[plan])+' دلار';
+        message = 'سلام، برای تهیه اشتراک '+title+'، '+account+'، با قیمت '+price+' راهنمایی می‌خواهم. لطفاً مدت اعتبار و مراحل فعال‌سازی را اعلام کنید.';
+      }
+      $('summaryPlan').textContent = title;
+      $('summaryAccount').textContent = account;
+      $('summaryDuration').textContent = duration;
+      $('summaryPrice').textContent = price;
+      $('orderMessage').value = message;
+      lastOrderButton = trigger;
+      if (typeof $('orderDialog').showModal === 'function') {
+        $('orderDialog').showModal();
+      } else {
+        $('orderDialog').setAttribute('open','');
+        $('orderDialog').scrollIntoView({block:'center'});
+      }
+    }
+    document.querySelectorAll('[data-order]').forEach(button => button.addEventListener('click', () => openOrder(button.dataset.order,button)));
+    function closeOrder() {
+      if (typeof $('orderDialog').close === 'function') $('orderDialog').close();
+      else { $('orderDialog').removeAttribute('open'); if (lastOrderButton) lastOrderButton.focus({preventScroll:true}); }
+    }
+    $('closeDialog').addEventListener('click', closeOrder);
+    $('orderDialog').addEventListener('close', () => {if (lastOrderButton) lastOrderButton.focus({preventScroll:true});});
+    $('orderDialog').addEventListener('click', event => {
+      if (event.target !== $('orderDialog')) return;
+      const rect = $('orderDialog').getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeOrder();
+    });
+
+    async function copyText(text, source) {
+      try {
+        if (!navigator.clipboard || !window.isSecureContext) throw new Error('Use local copy fallback');
+        await navigator.clipboard.writeText(text);
+        notify('کپی شد؛ می‌توانید در گفت‌وگو ارسال کنید.');
+      } catch (_) {
+        const temporary = !source;
+        const active = document.activeElement;
+        const area = source || document.createElement('textarea');
+        if (temporary) {
+          area.value = text;
+          area.setAttribute('readonly','');
+          area.setAttribute('aria-label','متن قابل کپی');
+          area.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+          document.body.appendChild(area);
+        }
+        area.focus({preventScroll:true});
+        area.select();
+        area.setSelectionRange(0,area.value.length);
+        let copied = false;
+        try { copied = document.execCommand('copy'); } catch (_) {}
+        if (temporary) area.remove();
+        if (copied && active) active.focus({preventScroll:true});
+        notify(copied ? 'کپی شد؛ می‌توانید در گفت‌وگو ارسال کنید.' : 'متن را انتخاب و به‌صورت دستی کپی کنید.');
+      }
+    }
+    $('copyOrder').addEventListener('click', () => copyText($('orderMessage').value,$('orderMessage')));
+    $('copyHandle').addEventListener('click', () => copyText('@ar12766'));
+    updateProvider();
+    renderPresets();
+    updateCalculator();
+  </script>
+</body>
+</html>
