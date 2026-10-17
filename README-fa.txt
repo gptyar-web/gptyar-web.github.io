@@ -19,3 +19,9 @@ ChatGPT قابل انتخاب است. Grok و Claude با وضعیت «به‌ز
 مجوز فونت در assets/fonts/OFL.txt قرار دارد.
 
 برای توضیحات کامل، README.md را بخوانید.
+
+آموزش‌های فعال‌سازی از منوی «فعال‌سازی» و بخش چهارکارتی آموزش‌ها در دسترس‌اند.
+اندروید: https://www.aparat.com/v/yzu9013
+ویندوز: https://www.aparat.com/v/raf7344
+آیفون: https://www.aparat.com/v/osy001n
+حساب اختصاصی: https://gptyar.com/academy/watch/plagyn-jypyty-yar-rahkary-bray-astfadh-hvsh-msnvay-dr-shrayt-ghta-ayntrnt-byn-al-xq30rr

@@ -36,7 +36,7 @@
     .brand-name{font-size:23px;font-weight:700;letter-spacing:-1.2px;line-height:1.25;display:block}
     .brand-name span{color:var(--blue)}
     .brand-caption{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.7}
-    .nav{display:flex;align-items:center;gap:30px;font-size:12px;color:#525e76}
+    .nav{display:flex;align-items:center;gap:22px;font-size:12px;color:#525e76}
     .nav a:hover{color:var(--blue)}
     .header-contact{font-size:11px;border:1px solid #cdd4e3;border-radius:10px;padding:8px 13px;display:inline-flex;align-items:center;gap:8px;background:#fff8;min-height:41px}
     .header-contact .icon{width:16px;height:16px;color:var(--blue)}
@@ -202,6 +202,39 @@
     .total-toman{font-size:11px;color:#7889ac;line-height:1.9}
     .calc-formula{font-size:9px;color:#9cabc5;margin-top:8px;overflow-wrap:anywhere}
     .calc-footnote{font-size:9px;color:#99a6bc;line-height:2;margin-top:12px;min-height:18px}
+    .account-help{flex:1;min-width:0}
+    .activation-shortcut{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--blue)}
+    .activation-shortcut .icon{width:14px;height:14px}
+    .activation-shortcut:hover{text-decoration:underline}
+    .activation{padding-top:12px;padding-bottom:70px}
+    .activation-heading{margin-bottom:24px}
+    .activation-count{display:inline-flex;align-items:center;gap:7px;font-size:10px;white-space:nowrap;border:1px solid #dce3f1;background:#f0f3fb;border-radius:30px;padding:7px 12px;color:#7281a0}
+    .activation-count .icon{width:14px;height:14px;color:var(--blue)}
+    .tutorial-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    .tutorial-card{display:flex;flex-direction:column;min-width:0;min-height:218px;padding:21px;background:white;border:1px solid var(--line);border-radius:19px;box-shadow:0 6px 22px #21325a04;transition:transform .2s,border-color .2s,box-shadow .2s;scroll-margin-top:106px}
+    .tutorial-card:hover{transform:translateY(-3px);border-color:#a8b5ef;box-shadow:0 12px 28px #24396d0b}
+    .tutorial-card.dedicated{background:#eef2ff;border-color:#d9e1fa}
+    .tutorial-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:19px}
+    .tutorial-icon{width:42px;height:42px;border-radius:12px;background:#f0f3fa;color:#6b7da5;display:grid;place-items:center;flex-shrink:0}
+    .tutorial-icon .icon{width:24px;height:24px}
+    .dedicated .tutorial-icon{background:#e1e8ff;color:#536cce}
+    .tutorial-source{font-size:8px;line-height:1.8;color:#8795ad;border:1px solid #e5eaf4;border-radius:5px;padding:3px 6px;background:#fafbfe;white-space:nowrap}
+    .dedicated .tutorial-source{background:#e8edff;border-color:#dce4fc;color:#7387bd}
+    .tutorial-copy{margin-bottom:20px}
+    .tutorial-copy h3{font-size:15px;line-height:1.9;color:#394d77;letter-spacing:-.2px}
+    .tutorial-copy p{font-size:10px;color:#7c8aa4;margin-top:4px;line-height:1.9}
+    .tutorial-bottom{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid #edf0f7;color:#657bb3;font-size:10px}
+    .dedicated .tutorial-bottom{border-color:#dce4fa;color:#5771be}
+    .tutorial-play{width:28px;height:28px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:#edf1fe;color:#617bd1;transition:background .2s,color .2s}
+    .tutorial-play .icon{width:13px;height:13px}
+    .tutorial-card:hover .tutorial-play{background:var(--blue);color:white}
+    .tutorial-bottom>.icon{width:14px;height:14px;margin-right:auto;flex-shrink:0}
+    .activation-note{font-size:10px;line-height:2.1;color:#8b99b2;margin-top:15px;display:flex;gap:6px;align-items:start}
+    .activation-note .icon{width:14px;height:14px;margin-top:3px}
+    @media(max-width:1080px){.tutorial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tutorial-card{min-height:206px}}
+    @media(max-width:620px){.activation{padding-top:7px;padding-bottom:44px}.activation-heading{margin-bottom:20px}.activation-heading h2{font-size:27px}.activation-heading p{font-size:11px}.activation-count{font-size:9px;margin-top:13px;padding:5px 10px}.tutorial-grid{gap:11px}.tutorial-card{padding:16px;min-height:205px;border-radius:15px;scroll-margin-top:90px}.tutorial-top{margin-bottom:15px;gap:7px}.tutorial-icon{width:33px;height:33px;border-radius:10px}.tutorial-icon .icon{width:20px;height:20px}.tutorial-source{font-size:7px;padding:2px 5px}.tutorial-copy{margin-bottom:16px}.tutorial-copy h3{font-size:13px;line-height:1.9}.tutorial-copy p{font-size:9px}.tutorial-bottom{font-size:9px;gap:6px;padding-top:12px}.tutorial-play{width:25px;height:25px}.tutorial-play .icon{width:12px;height:12px}.tutorial-bottom>.icon{width:12px;height:12px}.activation-note{font-size:9px;margin-top:12px}.activation-shortcut{font-size:9px}}
+    @media(max-width:360px){.tutorial-grid{grid-template-columns:1fr}.tutorial-card{min-height:187px;padding:18px}.tutorial-copy h3{font-size:15px}.tutorial-top{margin-bottom:14px}.tutorial-icon{width:38px;height:38px}.tutorial-source{font-size:8px}.tutorial-copy{margin-bottom:14px}.tutorial-bottom{font-size:10px}}
+    @media print{.activation{padding-top:15px;padding-bottom:25px}.tutorial-grid{display:grid;grid-template-columns:1fr 1fr}.tutorial-card{break-inside:avoid;box-shadow:none;transform:none;min-height:185px}.tutorial-card[href]:after{content:attr(href);font-size:8px;line-height:1.7;direction:ltr;overflow-wrap:anywhere;color:#667;margin-top:10px}.activation-shortcut{display:none}}
     .guide{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;padding-top:13px;padding-bottom:70px;align-items:start}
     .guide-heading p{color:var(--muted);font-size:12px;line-height:2.2;margin-top:13px;max-width:310px}
     .guide-link{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--blue);margin-top:23px}
@@ -284,6 +317,11 @@
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 10 7-10 7V5Z"/></symbol>
+    <symbol id="i-android" viewBox="0 0 24 24"><path d="m8 5-2-3m10 3 2-3M5 10a7 7 0 0 1 14 0H5Zm0 0v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8M9 20v2m6-2v2M2 11v6m20-6v6"/><path d="M9 7h.01M15 7h.01"/></symbol>
+    <symbol id="i-windows" viewBox="0 0 24 24"><path d="m3 5 8-1v7H3V5Zm10-1 8-1v8h-8V4ZM3 13h8v7l-8-1v-6Zm10 0h8v8l-8-1v-7Z"/></symbol>
+    <symbol id="i-iphone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 4h4m-3 15h2"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="9" r="5"/><path d="m12 12 8 8m-3-3 3-3m-6 0 2-2M6 8h.01"/></symbol>
     <symbol id="i-send" viewBox="0 0 24 24"><path d="m21 3-7 18-4-7-7-4L21 3Z"/><path d="m10 14 5-5"/></symbol>
     <symbol id="i-grok" viewBox="0 0 24 24"><path d="m5 4 14 16M19 4 5 20"/><path d="M4 4h4m8 16h4"/></symbol>
     <symbol id="i-claude" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 5l14 14M5 19 19 5M8 3l8 18M3 8l18 8M3 16l18-8M8 21l8-18"/></symbol>
@@ -292,7 +330,7 @@
   <header class="site-header">
     <div class="header-inner container">
       <a class="brand" href="#top" aria-label="جی‌پی‌تی‌یار، ابتدای صفحه"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></span><span><span class="brand-name" dir="ltr">gpt<span>yar</span></span><span class="brand-caption">اشتراک هوش مصنوعی</span></span></a>
-      <nav class="nav" aria-label="ناوبری اصلی"><a href="#services">سرویس‌ها</a><a href="#services" id="plansNav">پلن‌ها و قیمت‌ها</a><a href="#guide">راهنمای انتخاب</a></nav>
+      <nav class="nav" aria-label="ناوبری اصلی"><a href="#services">سرویس‌ها</a><a href="#services" id="plansNav">پلن‌ها و قیمت‌ها</a><a href="#activation">فعال‌سازی</a><a href="#guide">راهنمای انتخاب</a></nav>
       <div class="header-actions" role="group" aria-label="راه‌های گفت‌وگو"><a class="header-contact" href="https://eitaa.com/gptyar" target="_blank" rel="noopener noreferrer" aria-label="گفت‌وگو در ایتا" data-contact-link><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><span class="contact-label-full">گفت‌وگو در ایتا</span><span class="contact-label-short">ایتا</span></a><a class="header-contact" href="https://divar.ir/v/ga5aAJjh" target="_blank" rel="noopener noreferrer" aria-label="گفت‌وگو از طریق آگهی دیوار" data-divar-link><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><span class="contact-label-full">گفت‌وگو در دیوار</span><span class="contact-label-short">دیوار</span></a></div>
     </div>
   </header>
@@ -321,7 +359,7 @@
 
     <section class="section container" id="plans" aria-labelledby="plansTitle" data-service-content hidden>
       <div class="section-heading"><div><span class="kicker">پلن‌های ChatGPT</span><h2 id="plansTitle" tabindex="-1">برای هر سطح از کار، یک انتخاب.</h2><p>امکانات را مقایسه کنید و نوع حساب مناسب خودتان را انتخاب کنید.</p></div><span class="monthly-badge"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>تمام طرح‌های این بخش: ۱ ماهه</span></div>
-      <div class="account-switcher"><div class="account-tabs" role="group" aria-label="نوع حساب برای پلن‌های یک‌ماهه"><button type="button" data-account="new" aria-pressed="true">حساب جدید (اختصاصی)</button><button type="button" data-account="personal" aria-pressed="false">روی حساب شخصی من</button></div><p class="account-explanation" id="accountExplanation" aria-live="polite">یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.</p></div>
+      <div class="account-switcher"><div class="account-tabs" role="group" aria-label="نوع حساب برای پلن‌های یک‌ماهه"><button type="button" data-account="new" aria-pressed="true">حساب جدید (اختصاصی)</button><button type="button" data-account="personal" aria-pressed="false">روی حساب شخصی من</button></div><div class="account-help"><p class="account-explanation" id="accountExplanation" aria-live="polite">یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.</p><a class="activation-shortcut" id="activationShortcut" href="#activation-dedicated"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="activationShortcutLabel">آموزش حساب اختصاصی</span></a></div></div>
       <div class="plans-grid">
         <article class="plan-card" aria-labelledby="goTitle"><div class="plan-content">
           <div class="plan-top"><h3 id="goTitle" class="plan-name" lang="en" dir="ltr">Go</h3><span class="plan-label">روزمره و اقتصادی</span></div><p class="plan-desc">برای یادگیری، ایده‌های تازه و کارهای سبک روزانه.</p>
@@ -360,6 +398,17 @@
       </div></div>
     </section>
 
+    <section class="activation container" id="activation" aria-labelledby="activationTitle">
+      <div class="section-heading activation-heading"><div><span class="kicker">راهنمای ویدیویی</span><h2 id="activationTitle">فعال‌سازی، قدم‌به‌قدم.</h2><p>آموزش مربوط به دستگاه یا نوع حساب خود را انتخاب کنید.</p></div><span class="activation-count"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>۴ آموزش فعال‌سازی</span></div>
+      <div class="tutorial-grid">
+        <a class="tutorial-card" id="activation-android" href="https://www.aparat.com/v/yzu9013" target="_blank" rel="noopener noreferrer" data-activation="android" aria-label="مشاهده ویدیوی روش فعال‌سازی در اندروید در آپارات، در برگه جدید"><div class="tutorial-top"><span class="tutorial-icon"><svg class="icon" aria-hidden="true"><use href="#i-android"/></svg></span><span class="tutorial-source">آپارات</span></div><div class="tutorial-copy"><h3>فعال‌سازی در اندروید</h3><p lang="en">Android</p></div><div class="tutorial-bottom"><span class="tutorial-play"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></span><span>مشاهده ویدیو</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></div></a>
+        <a class="tutorial-card" id="activation-windows" href="https://www.aparat.com/v/raf7344" target="_blank" rel="noopener noreferrer" data-activation="windows" aria-label="مشاهده ویدیوی روش فعال‌سازی در ویندوز در آپارات، در برگه جدید"><div class="tutorial-top"><span class="tutorial-icon"><svg class="icon" aria-hidden="true"><use href="#i-windows"/></svg></span><span class="tutorial-source">آپارات</span></div><div class="tutorial-copy"><h3>فعال‌سازی در ویندوز</h3><p lang="en">Windows</p></div><div class="tutorial-bottom"><span class="tutorial-play"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></span><span>مشاهده ویدیو</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></div></a>
+        <a class="tutorial-card" id="activation-iphone" href="https://www.aparat.com/v/osy001n" target="_blank" rel="noopener noreferrer" data-activation="iphone" aria-label="مشاهده ویدیوی روش فعال‌سازی در آیفون در آپارات، در برگه جدید"><div class="tutorial-top"><span class="tutorial-icon"><svg class="icon" aria-hidden="true"><use href="#i-iphone"/></svg></span><span class="tutorial-source">آپارات</span></div><div class="tutorial-copy"><h3>فعال‌سازی در آیفون</h3><p lang="en">iPhone</p></div><div class="tutorial-bottom"><span class="tutorial-play"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></span><span>مشاهده ویدیو</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></div></a>
+        <a class="tutorial-card dedicated" id="activation-dedicated" href="https://gptyar.com/academy/watch/plagyn-jypyty-yar-rahkary-bray-astfadh-hvsh-msnvay-dr-shrayt-ghta-ayntrnt-byn-al-xq30rr" target="_blank" rel="noopener noreferrer" data-activation="dedicated" aria-label="مشاهده ویدیوی روش فعال‌سازی حساب اختصاصی در آکادمی جی‌پی‌تی‌یار، در برگه جدید"><div class="tutorial-top"><span class="tutorial-icon"><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg></span><span class="tutorial-source">آکادمی</span></div><div class="tutorial-copy"><h3>فعال‌سازی حساب اختصاصی</h3><p>آکادمی جی‌پی‌تی‌یار</p></div><div class="tutorial-bottom"><span class="tutorial-play"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg></span><span>مشاهده ویدیو</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></div></a>
+      </div>
+      <p class="activation-note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>با انتخاب هر کارت، صفحهٔ ویدیو در آپارات یا آکادمی جی‌پی‌تی‌یار، در برگهٔ جدید باز می‌شود.</p>
+    </section>
+
     <section class="guide container" id="guide" aria-labelledby="guideTitle">
       <div class="guide-heading"><span class="kicker">پیش از انتخاب</span><h2 id="guideTitle">شفاف بدانید،<br>آگاهانه انتخاب کنید.</h2><p>مدت اعتبار، روش دسترسی و نوع حساب را ببینید. برای پرسش‌های بیشتر، کافی است با ما در ارتباط باشید.</p><div class="guide-actions" role="group" aria-label="دریافت راهنمایی"><a href="https://eitaa.com/gptyar" class="guide-link" target="_blank" rel="noopener noreferrer" data-contact-link>راهنمایی در ایتا <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a><a href="https://divar.ir/v/ga5aAJjh" class="guide-link" target="_blank" rel="noopener noreferrer" data-divar-link>راهنمایی در دیوار <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div>
       <div class="faq-list"><details class="faq-item"><summary>اعتبار حساب‌های اختصاصی و شخصی چقدر است؟</summary><p>همه حساب‌های جدید (اختصاصی) و حساب‌های شخصی در پلن‌های Go، Plus و Pro برای ۱ ماه ارائه می‌شوند. حساب اشتراکی Plus استثناست و مدت آن را بر اساس تعرفه روزانه یا ماهانه انتخاب می‌کنید.</p></details><details class="faq-item"><summary>حساب اختصاصی و حساب شخصی چه تفاوتی دارند؟</summary><p>در حساب جدید یا اختصاصی، یک توکن فعال‌سازی دریافت می‌کنید و دسترسی از طریق افزونه برای شما فعال می‌شود. در حساب شخصی، اشتراک روی حساب فعلی شما فعال می‌شود؛ برای هماهنگی مراحل با پشتیبانی تماس بگیرید. قیمت و مدت اعتبار یک‌ماهه در هر دو روش برابر است.</p><p>ایمیل حساب را فقط در صورت نیاز برای هماهنگی ارائه کنید. رمز عبور، کد ورود، کوکی، سشن یا توکن ورود حساب شخصی خود را برای دیگران ارسال نکنید.</p></details><details class="faq-item"><summary>حریم خصوصی در حساب اشتراکی چگونه است؟</summary><p>حساب اشتراکی فقط برای ChatGPT Plus ارائه می‌شود. دسترسی با توکن فعال‌سازی از طریق افزونه انجام می‌شود و طبق توضیحات ارائه‌دهنده، چت‌ها و پروژه‌ها تفکیک می‌شوند. این تفکیک به‌تنهایی تضمین حریم خصوصی کامل نیست؛ جزئیات دسترسی و حریم خصوصی به سازوکار افزونه و مدیریت حساب وابسته است.</p></details><details class="faq-item"><summary>قیمت‌ها به چه واحدی هستند و خرید چگونه انجام می‌شود؟</summary><p>قیمت حساب‌های یک‌ماهه جدید و شخصی به دلار است. حساب اشتراکی روزانه ۳۵٬۰۰۰ تومان (۳۵۰٬۰۰۰ ریال) و ماهانه ۱٬۰۰۰٬۰۰۰ تومان (۱۰٬۰۰۰٬۰۰۰ ریال) است. محاسبه‌گر هر دو واحد را نمایش می‌دهد. با انتخاب پلن، خلاصه درخواست آماده می‌شود تا آن را در ایتا یا همان گفت‌وگوی آگهی دیوار ارسال کنید.</p></details><details class="faq-item"><summary>آیا Grok و Claude قابل تهیه هستند؟</summary><p>این دو سرویس فعلاً با وضعیت «به‌زودی» نمایش داده می‌شوند و امکان انتخاب یا ثبت درخواست خرید برای آن‌ها فعال نیست. اطلاعات پلن‌ها پس از اضافه شدن سرویس نمایش داده خواهد شد.</p></details></div>
@@ -378,6 +427,12 @@
     // قیمت‌های Go، Plus و Pro به دلار، و تعرفه‌های اشتراکی به ریال هستند.
     const PRICES = Object.freeze({go:10,plus:24,pro:106,dayRial:350000,monthRial:10000000});
     const CONTACT = Object.freeze({handle:'@gptyar',url:'https://eitaa.com/gptyar',divarUrl:'https://divar.ir/v/ga5aAJjh'});
+    const ACTIVATION_GUIDES = Object.freeze({
+      android:'https://www.aparat.com/v/yzu9013',
+      windows:'https://www.aparat.com/v/raf7344',
+      iphone:'https://www.aparat.com/v/osy001n',
+      dedicated:'https://gptyar.com/academy/watch/plagyn-jypyty-yar-rahkary-bray-astfadh-hvsh-msnvay-dr-shrayt-ghta-ayntrnt-byn-al-xq30rr'
+    });
     const MONTH_LABEL = '۱ ماهه';
     const SERVICES = Object.freeze({chatgpt:{name:'ChatGPT',available:true},grok:{name:'Grok',available:false},claude:{name:'Claude',available:false}});
     const ACCOUNT_NOTES = Object.freeze({new:'یک توکن فعال‌سازی اختصاصی دریافت می‌کنید و دسترسی حساب از طریق افزونه برای شما فعال می‌شود.',personal:'اشتراک روی حساب فعلی شما فعال می‌شود. مراحل را با پشتیبانی هماهنگ کنید؛ رمز عبور، کد ورود یا اطلاعات سشن حساب خود را ارسال نکنید.'});
@@ -421,12 +476,15 @@
     function updateAccount() {
       document.querySelectorAll('[data-account]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.account===account)));
       $('accountExplanation').textContent=ACCOUNT_NOTES[account];
+      $('activationShortcut').href=account==='new'?'#activation-dedicated':'#activation';
+      $('activationShortcutLabel').textContent=account==='new'?'آموزش حساب اختصاصی':'آموزش‌های فعال‌سازی';
       document.querySelectorAll('[data-account-label]').forEach(label=>{label.textContent=(account==='personal'?'روی حساب شخصی شما':'حساب جدید (اختصاصی)')+' · '+MONTH_LABEL;});
     }
     document.querySelectorAll('[data-account]').forEach(button=>button.addEventListener('click',()=>{account=button.dataset.account;updateAccount();}));
     document.querySelectorAll('[data-usd]').forEach(element=>{element.textContent=String(PRICES[element.dataset.usd]);});
     document.querySelectorAll('[data-contact-link]').forEach(link=>{link.href=CONTACT.url;});
     document.querySelectorAll('[data-divar-link]').forEach(link=>{link.href=CONTACT.divarUrl;});
+    document.querySelectorAll('[data-activation]').forEach(link=>{const url=ACTIVATION_GUIDES[link.dataset.activation];if(url)link.href=url;});
     document.querySelectorAll('[data-contact-handle]').forEach(element=>{element.textContent=CONTACT.handle;});
     document.querySelectorAll('[data-rate]').forEach(element=>{element.textContent=fa((element.dataset.rate==='day'?PRICES.dayRial:PRICES.monthRial)/10);});
     function renderPresets() {
