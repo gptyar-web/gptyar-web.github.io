@@ -2,6 +2,7 @@ import {context} from './context.js';
 import {authRoute,authenticate} from './auth.js';
 import {adminRoute} from './admin.js';
 import {handleMessage,preCheckout} from './bot.js';
+import {receiveRubika} from './rubika-context.js';
 import {hash,equal} from './crypto.js';
 import {assert,AppError} from './domain.js';
 const ORIGINS=new Set(['https://gptyar-web.github.io','http://localhost:5173','http://127.0.0.1:5173','http://terminal.local:4173']);
@@ -27,6 +28,15 @@ export function createHandler(env,transport=fetch){return async req=>{
   if(path==='/health')return new Response(JSON.stringify({ok:true,service:'gptyar-bale',version:'1.1.0'}),{headers});
   ctx=await context(env,transport);let body={};
   if(!['GET','HEAD'].includes(req.method))body=await bodyJSON(req);
+  const rubikaWebhook=path.match(/^\/rubika\/webhook\/([a-f0-9]{64})$/);
+  if(rubikaWebhook){
+   assert(req.method==='POST','METHOD_NOT_ALLOWED',405);
+   const secret=await ctx.secret('rubika_webhook');
+   assert(secret&&equal(await hash(secret),await hash(rubikaWebhook[1])),'WEBHOOK_DENIED',403);
+   const result=await receiveRubika(ctx,body,handleMessage);
+   return new Response(JSON.stringify(result),{headers});
+  }
+  if(path.startsWith('/rubika'))throw new AppError('WEBHOOK_DENIED',403);
   const webhook=path.match(/^\/webhook\/([a-f0-9]{64})$/);
   if(webhook){
    assert(req.method==='POST','METHOD_NOT_ALLOWED',405);const secret=await ctx.secret('webhook');assert(secret&&equal(await hash(secret),await hash(webhook[1])),'WEBHOOK_DENIED',403);
