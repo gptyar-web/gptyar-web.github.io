@@ -23,9 +23,41 @@ export class Bale {
 // A successful administrator validation and subscriber listing are required before enabling sales.
 export class Extension {
  constructor(token,version='4.6.5',transport=fetch){this.token=token;this.version=version;this.transport=transport;}
- async call(path,method='GET',body){let r;try{r=await this.transport(`https://api.gptyar.com/accupdator/${path}`,{method,headers:{Authorization:`Bearer ${this.token}`,'Content-Type':'application/json',Accept:'application/json'},body:body===undefined?undefined:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(12000)});}catch{throw new AppError('EXTENSION_UNREACHABLE',502);}const d=await r.json().catch(()=>null);if(!r.ok){const e=new AppError(r.status===401||r.status===403?'EXTENSION_UNAUTHORIZED':'EXTENSION_API_ERROR',502);e.definiteRejection=r.status>=400&&r.status<500;throw e;}assert(d&&!d.error,'EXTENSION_CONTRACT',502);return d;}
- async list(){const d=await this.call('subscribers/all');assert(d.accountId&&Array.isArray(d.subscribers),'EXTENSION_CONTRACT',502);return{accountId:String(d.accountId),subscribers:d.subscribers.map(normalizeSubscriber)};}
- async validate(){assert(typeof this.token==='string'&&/^@[^\s\u0000-\u001f\u007f]{1,511}$/.test(this.token),'INVALID_ADMIN_TOKEN');const p=await this.call('validate','POST',{token:this.token,version:this.version});assert(p.account?.id!==undefined&&p.account?.id!==null&&String(p.account.id).trim()!=='','EXTENSION_UNAUTHORIZED',403);const listing=await this.list();assert(listing.accountId===String(p.account.id),'EXTENSION_SCOPE',403);return{accountId:listing.accountId,count:listing.subscribers.length};}
+ async call(path,method='GET',body){
+  let r;
+  try{
+   r=await this.transport(`https://api.gptyar.com/accupdator/${path}`,{
+    method,headers:{Authorization:`Bearer ${this.token}`,'Content-Type':'application/json',Accept:'application/json'},
+    body:body===undefined?undefined:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(12000)
+   });
+  }catch{throw new AppError('EXTENSION_UNREACHABLE',502);}
+  const d=await r.json().catch(()=>null);
+  if(!r.ok){
+   const e=new AppError(r.status===401||r.status===403?'EXTENSION_UNAUTHORIZED':'EXTENSION_API_ERROR',502);
+   e.definiteRejection=r.status>=400&&r.status<500;
+   throw e;
+  }
+  assert(d&&typeof d==='object'&&!Array.isArray(d),'EXTENSION_CONTRACT',502);
+  // Some upstream endpoints report application-level errors with HTTP 200.
+  // Never mislabel an explicit rejection as a malformed response.
+  if(d.error){const e=new AppError('EXTENSION_REJECTED',502);e.definiteRejection=true;throw e;}
+  return d;
+ }
+ async list({normalize=true}={}){
+  const d=await this.call('subscribers/all');
+  assert(d.accountId!==undefined&&d.accountId!==null&&String(d.accountId).trim()!==''&&Array.isArray(d.subscribers),'EXTENSION_LIST_FORMAT',502);
+  // Manager validation checks account ownership and ability to read the list.
+  // It must not fail because of a legacy or incomplete *individual subscriber*.
+  return{accountId:String(d.accountId),subscribers:normalize?d.subscribers.map(normalizeSubscriber):d.subscribers};
+ }
+ async validate(){
+  assert(typeof this.token==='string'&&/^@[^\s\u0000-\u001f\u007f]{1,511}$/.test(this.token),'INVALID_ADMIN_TOKEN');
+  const p=await this.call('validate','POST',{token:this.token,version:this.version});
+  assert(p.account&&p.account.id!==undefined&&p.account.id!==null&&String(p.account.id).trim()!=='','EXTENSION_VALIDATE_FORMAT',502);
+  const listing=await this.list({normalize:false});
+  assert(listing.accountId===String(p.account.id),'EXTENSION_SCOPE',403);
+  return{accountId:listing.accountId,count:listing.subscribers.length};
+ }
  create(fullName,expiresAt){return this.call('subscribers/create','POST',{name:fullName,expiresAt});}
  update(remoteId,expiresAt){return this.call('subscribers/update','PATCH',{subscriptionId:remoteId,expiresAt});}
 }
