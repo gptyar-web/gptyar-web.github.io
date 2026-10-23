@@ -29,17 +29,17 @@ async function invoice(ctx,bale,user,data,coupon=null){
     await deliver(ctx,done);
    }catch(e){
     await ctx.audit('bot.fulfillment_deferred',user,{order_id:order.id,code:e.code||'FULFILLMENT_ERROR'});
-    await bale.send(user,`کد تخفیف ۱۰۰٪ اعمال شد و تمدید شما بدون پرداخت ثبت شد ✅\\nفعال‌سازی در حال بررسی است. دوباره سفارش ثبت نکنید.\\nکد سفارش: ${order.id}`,MENU);
+    await bale.send(user,`کد تخفیف ۱۰۰٪ اعمال شد و تمدید شما بدون پرداخت ثبت شد ✅\nفعال‌سازی در حال بررسی است. دوباره سفارش ثبت نکنید.\nکد سفارش: ${order.id}`,MENU);
    }
   }else{
    await state(ctx,user,'paid_choice',{order_id:order.id});
-   await bale.send(user,`تخفیف کامل اعمال شد ✅\\nمبلغ قابل پرداخت: ۰ تومان\\nهیچ پرداختی لازم نیست.\\n${lines.slice(0,-2).join('\\n')}\\n\\nاکنون نوع دریافت توکن را انتخاب کنید.`,TOKEN);
+   await bale.send(user,`تخفیف کامل اعمال شد ✅\nمبلغ قابل پرداخت: ۰ تومان\nهیچ پرداختی لازم نیست.\n${lines.slice(0,-2).join('\n')}\n\nاکنون نوع دریافت توکن را انتخاب کنید.`,TOKEN);
   }
   return;
  }
  await state(ctx,user,'await_payment',{order_id:order.id});
  try{
-  await bale.send(user,lines.join('\\n'),[['سفارش‌های من','پشتیبانی'],['منوی اصلی']]);
+  await bale.send(user,lines.join('\n'),[['سفارش‌های من','پشتیبانی'],['منوی اصلی']]);
   const message=await bale.call('sendInvoice',{chat_id:user,title:'اشتراک ChatGPT Plus',description:`${order.days} روز؛ ${order.full_name}`.slice(0,255),payload:order.id,provider_token:await ctx.secret('bale_payment'),prices:[{label:`اشتراک ${order.days} روزه`,amount:Number(order.total_toman)*10}]});
   await ctx.db.patch('orders',`id=eq.${order.id}`,{invoice_message_id:message.message_id});
  }catch(e){await ctx.db.patch('orders',`id=eq.${order.id}&status=eq.pending`,{status:'cancelled',error_code:e.code||'INVOICE_FAILED'});await state(ctx,user,'menu');throw e;}
