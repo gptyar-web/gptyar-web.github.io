@@ -45,8 +45,8 @@ export async function adminRoute(ctx,path,req,b,auth){
  }
  if(path==='/coupons'&&req.method==='POST'){
   const code=String(b.code||'').trim().toUpperCase();assert(/^[A-Z0-9_-]{3,32}$/.test(code),'INVALID_COUPON_CODE');assert(['percent','fixed'].includes(b.kind),'INVALID_DISCOUNT');
-  const value=integer(b.value,1,b.kind==='percent'?100:10000000),max=integer(b.max_uses,1,1000000),per=integer(b.per_user_limit||1,1,max);const end=Date.parse(b.expires_at);assert(Number.isFinite(end)&&end>Date.now(),'INVALID_EXPIRY');
-  const rows=await ctx.db.insert('coupons',{code,kind:b.kind,value,max_uses:max,per_user_limit:per,expires_at:new Date(end).toISOString()});await ctx.audit('coupon.created',actor,{code});return{row:rows[0]};
+  const value=integer(b.value,1,b.kind==='percent'?100:10000000),max=integer(b.max_uses,1,1000000),per=integer(b.per_user_limit||1,1,max);assert(Object.hasOwn(b,'expires_at'),'INVALID_EXPIRY');const noExpiry=b.expires_at===null;const end=noExpiry?null:Date.parse(b.expires_at);assert(noExpiry||(typeof b.expires_at==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(b.expires_at)&&Number.isFinite(end)&&end>Date.now()),'INVALID_EXPIRY');
+  const rows=await ctx.db.insert('coupons',{code,kind:b.kind,value,max_uses:max,per_user_limit:per,expires_at:noExpiry?null:new Date(end).toISOString()});await ctx.audit('coupon.created',actor,{code});return{row:rows[0]};
  }
  const coupon=path.match(/^\/coupons\/([a-f0-9-]{36})$/);
  if(coupon&&req.method==='PATCH'){assert(typeof b.active==='boolean','INVALID_INPUT');await ctx.db.patch('coupons',`id=eq.${coupon[1]}`,{active:b.active});await ctx.audit('coupon.updated',actor,{id:coupon[1],active:b.active});return{ok:true};}
