@@ -1,15 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fulfill} from '../supabase/functions/gptyar-bale/fulfillment.js';
+import {fulfill,deliver,chooseSubscription} from '../supabase/functions/gptyar-bale/fulfillment.js';
 import {AppError} from '../supabase/functions/gptyar-bale/domain.js';
 const id='1b2b7e78-6ab8-47e6-bf25-d6487e2e3377';
-function fixture({renewal=false,failCreate=false,createRemotely=true,failUpdate=false}={}){
+function fixture({renewal=false,failCreate=false,createRemotely=true,failUpdate=false,failListAfterCreate=false}={}){
  const order={id,bale_id:123,full_name:'Test User',days:7,kind:renewal?'renewal':'purchase',status:'paid',paid_at:new Date().toISOString(),subscription_id:renewal?'sub1':null};
  const remote={remote_id:'r1',token:'user-token',name:renewal?'Existing Subscriber':'Test User',expires_at:'2026-12-01T00:00:00.000Z'};
  let subscribers=renewal?[remote]:[],creates=0,updates=0,completions=0;
- const client={list:async()=>({accountId:'a1',subscribers}),create:async(name,expires_at)=>{creates++;if(createRemotely)subscribers=[{...remote,name,expires_at}];if(failCreate)throw new AppError('EXTENSION_UNREACHABLE',502);},update:async(r,target)=>{updates++;remote.expires_at=target;if(failUpdate)throw new AppError('EXTENSION_UNREACHABLE',502);}};
+ const client={list:async()=>{if(creates&&failListAfterCreate){failListAfterCreate=false;throw new AppError('EXTENSION_UNREACHABLE',502);}return{accountId:'a1',subscribers};},create:async(name,expires_at)=>{creates++;if(createRemotely)subscribers=[{...remote,name,expires_at}];if(failCreate)throw new AppError('EXTENSION_UNREACHABLE',502);return{subscriptionId:remote.remote_id,name,token:remote.token,expiresAt:expires_at};},update:async(r,target)=>{updates++;remote.expires_at=target;if(failUpdate)throw new AppError('EXTENSION_UNREACHABLE',502);}};
  const ctx={lease:async(k,fn)=>fn(),extension:async()=>client,settings:async()=>({extension_account_id:'a1'}),encrypt:async s=>'sealed:'+s,audit:async()=>{},db:{
-  one:async(table)=>table==='orders'?{...order}:table==='subscriptions'?{id:'sub1',bale_id:123,remote_id:'r1'}:null,
+  one:async(table,q)=>table==='orders'?(q.startsWith('id=eq.')?{...order}:null):table==='subscriptions'&&(renewal||order.status==='fulfilled')?{id:'sub1',bale_id:123,remote_id:'r1',token_ciphertext:'sealed:user-token',expires_at:remote.expires_at}:null,
   patch:async(table,q,value)=>{if(table==='orders')Object.assign(order,value);return[{...order}];},
   rpc:async(name,args)=>{assert.equal(name,'complete');completions++;Object.assign(order,{status:'fulfilled',subscription_id:'sub1',target_expires_at:args.p_expiry});return{...order};}
  }};
@@ -39,4 +39,29 @@ test('new subscription is created using only the submitted first and last name',
  const f=fixture();await fulfill(f.ctx,id);
  assert.equal(f.remote.name,'Test User');
  assert.deepEqual(f.counts(),{creates:1,updates:0,completions:1});
+});
+
+test('successful create response survives a failed confirmation GET without creating twice',async()=>{
+ const f=fixture({failListAfterCreate:true});await assert.rejects(()=>fulfill(f.ctx,id),{code:'EXTENSION_UNREACHABLE'});
+ assert.equal(f.order.remote_id,'r1');assert.equal(f.order.status,'review');
+ await fulfill(f.ctx,id,{reconcileOnly:true});assert.equal(f.order.status,'fulfilled');assert.equal(f.counts().creates,1);
+});
+test('administrator can recover an ambiguous create by explicitly identifying the token',async()=>{
+ const f=fixture({failCreate:true});await assert.rejects(()=>fulfill(f.ctx,id));
+ await fulfill(f.ctx,id,{reconcileOnly:true,recoveryToken:'user-token'});assert.equal(f.order.status,'fulfilled');assert.equal(f.counts().creates,1);
+});
+test('manual recovery rejects a token whose account name does not match the paid order',async()=>{
+ const f=fixture({failCreate:true});await assert.rejects(()=>fulfill(f.ctx,id));f.order.full_name='Another Person';
+ await assert.rejects(()=>fulfill(f.ctx,id,{reconcileOnly:true,recoveryToken:'user-token'}),{code:'RECOVERY_NAME_MISMATCH'});assert.equal(f.counts().completions,0);
+});
+test('a provisioning purchase cannot be silently replaced by an existing subscriber',async()=>{
+ const f=fixture();f.order.status='provisioning';
+ await assert.rejects(()=>chooseSubscription(f.ctx,id,123,'user-token'),{code:'RECONCILIATION_REQUIRED'});assert.equal(f.counts().creates,0);
+});
+test('token message failure preserves fulfillment and can be retried independently',async()=>{
+ const f=fixture();await fulfill(f.ctx,id);let attempts=0;
+ f.ctx.decrypt=async()=> 'user-token';f.ctx.bale=async()=>({send:async()=>{attempts++;if(attempts===1)throw new AppError('BALE_UNREACHABLE',502);return{message_id:1};}});
+ await assert.rejects(()=>deliver(f.ctx,{...f.order}),{code:'DELIVERY_FAILED'});assert.equal(f.order.status,'fulfilled');assert.equal(f.order.delivery_error_code,'BALE_UNREACHABLE');
+ await deliver(f.ctx,{...f.order});assert.ok(f.order.delivery_sent_at);assert.equal(f.order.delivery_error_code,null);
+ await deliver(f.ctx,{...f.order});assert.equal(attempts,2);assert.equal(f.counts().creates,1);
 });

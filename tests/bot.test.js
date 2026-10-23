@@ -10,15 +10,15 @@ function fixture({free=false}={}){
  extension:async()=>({list:async()=>({accountId:'account1',subscribers:upstream})}),
  encrypt:async()=>'<cipher>',db:{
   upsert:async(table,row)=>{const m=table==='customers'?customers:conversations;m.set(row.bale_id,{...m.get(row.bale_id),...row});},
-  one:async(table,q)=>{if(table==='links'){const os=q.split('eq.')[1];return{title:os,tutorial_url:'https://www.aparat.com/v/'+links[os],download_url:'https://gptyar2.soservice.ir/download',note:''};}if(table==='conversations')return conversations.get(123);if(table==='orders')return orders.find(x=>q.includes('eq.'+x.id))||null;},
+  one:async(table,q)=>{if(table==='links'){const os=q.split('eq.')[1];return{title:os,tutorial_url:'https://www.aparat.com/v/'+links[os],download_url:'https://gptyar2.soservice.ir/download',note:''};}if(table==='conversations')return conversations.get(123);if(table==='subscriptions')return{id:'local-sub-1',remote_id:'r1'};if(table==='orders')return orders.find(x=>q.includes('eq.'+x.id))||null;},
   patch:async(table,q,row)=>{if(table==='customers')customers.set(123,{...customers.get(123),...row});},
   list:async()=>[],
   rpc:async(method,p)=>{
    if(method==='bind_token')return{id:'local-sub-1'};
-   assert.equal(method,'new_order_v2');
+   assert.equal(method,'checkout_order');
    if(p.p_coupon==='BAD')throw new AppError('INVALID_COUPON');
    const subtotal=p.p_days*35000,discount=free&&p.p_coupon==='FREE100'?subtotal:0;
-   const o={id:'1b2b7e78-6ab8-47e6-bf25-d6487e2e3377',full_name:p.p_kind==='renewal'?p.p_name:customers.get(123).first_name+' '+customers.get(123).last_name,
+   const o={bale_id:123,expires_at:new Date(Date.now()+1800000).toISOString(),id:'1b2b7e78-6ab8-47e6-bf25-d6487e2e3377',full_name:p.p_kind==='renewal'?p.p_name:customers.get(123).first_name+' '+customers.get(123).last_name,
    kind:p.p_kind,subscription_id:p.p_subscription,days:p.p_days,subtotal_toman:subtotal,discount_toman:discount,total_toman:subtotal-discount,
    coupon_id:discount?'coupon1':null,status:discount?'paid':'pending',paid_at:discount?new Date().toISOString():null};orders.push(o);return o;
   }

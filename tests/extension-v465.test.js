@@ -64,7 +64,7 @@ test('admin validation is not blocked by unrelated legacy subscriber data',async
  };
  const ext=new Extension(adminToken,'4.6.5',transport);
  assert.deepEqual(await ext.validate(),{accountId:'account-1',count:1});
- await assert.rejects(()=>ext.list(),{code:'EXTENSION_SUBSCRIBER_FORMAT'});
+ assert.deepEqual((await ext.list()).subscribers,[]);
 });
 test('legacy numeric subscription identifiers can be used for existing user tokens',async()=>{
  const transport=async(url)=>{

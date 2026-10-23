@@ -24,7 +24,7 @@ export function createHandler(env,transport=fetch){return async req=>{
   headers['Access-Control-Allow-Headers']='authorization,content-type';headers['Access-Control-Allow-Methods']='GET,POST,PUT,PATCH,OPTIONS';
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers});
   const url=new URL(req.url);let path=routePath(url.pathname);
-  if(path==='/health')return new Response(JSON.stringify({ok:true,service:'gptyar-bale',version:'1.0.0'}),{headers});
+  if(path==='/health')return new Response(JSON.stringify({ok:true,service:'gptyar-bale',version:'1.1.0'}),{headers});
   ctx=await context(env,transport);let body={};
   if(!['GET','HEAD'].includes(req.method))body=await bodyJSON(req);
   const webhook=path.match(/^\/webhook\/([a-f0-9]{64})$/);
@@ -37,7 +37,7 @@ export function createHandler(env,transport=fetch){return async req=>{
    if(!await ctx.db.rpc('claim_update',{p_id:updateId,p_owner:updateOwner})){
     const existing=await ctx.db.one('updates',`update_id=eq.${updateId}`);if(existing?.status==='done')return new Response(JSON.stringify({ok:true,duplicate:true}),{headers});throw new AppError('BUSY_RETRY',503);
    }
-   await ctx.lease(`chat:${msg.from.id}`,()=>handleMessage(ctx,msg));
+   ctx.updateId=updateId;await ctx.lease(`chat:${msg.from.id}`,()=>handleMessage(ctx,msg));
    await ctx.db.patch('updates',`update_id=eq.${updateId}&owner=eq.${updateOwner}`,{status:'done',error_code:null});return new Response(JSON.stringify({ok:true}),{headers});
   }
   if(path.startsWith('/webhook'))throw new AppError('WEBHOOK_DENIED',403);

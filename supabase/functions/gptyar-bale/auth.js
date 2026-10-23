@@ -28,9 +28,10 @@ export async function authRoute(ctx,path,req,body){
   const secret=await ctx.decrypt(a.totp_secret,'totp');
   const counter=await totpCounter(secret,code);let recovery=null;
   if(counter===null){assert(s.stage==='mfa'&&/^[A-F0-9]{16}$/.test(code),'INVALID_OTP',401);recovery=await hash(`${a.id}:${code}`);assert(await ctx.db.one('recovery_codes',`code_hash=eq.${recovery}&admin_id=eq.${a.id}&used_at=is.null`),'INVALID_OTP',401);}
-  const token=random(),result=await ctx.db.rpc('finish_auth',{p_challenge:challengeHash,p_counter:counter??0,p_next:await hash(token),p_recovery:recovery});
-  let recoveryCodes;
-  if(result.enrolled){recoveryCodes=Array.from({length:8},()=>random(8).toUpperCase());await ctx.db.insert('recovery_codes',await Promise.all(recoveryCodes.map(async code=>({admin_id:a.id,code_hash:await hash(`${a.id}:${code}`)}))));}
+  const token=random(),recoveryCodes=s.stage==='setup'?Array.from({length:8},()=>random(8).toUpperCase()):undefined;
+  const result=s.stage==='setup'
+   ?await ctx.db.rpc('enroll_auth',{p_challenge:challengeHash,p_counter:counter,p_next:await hash(token),p_codes:await Promise.all(recoveryCodes.map(code=>hash(`${a.id}:${code}`)))})
+   :await ctx.db.rpc('finish_auth',{p_challenge:challengeHash,p_counter:counter??0,p_next:await hash(token),p_recovery:recovery});
   return{token,username:result.username,recovery_codes:recoveryCodes};
  }
  return null;

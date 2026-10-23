@@ -13,7 +13,7 @@ export async function context(env,transport=fetch){
   async ready(){const [bot,pay,ext,s]=await Promise.all([ctx.secret('bale_bot'),ctx.secret('bale_payment'),ctx.secret('extension_admin'),ctx.settings()]);return !!(bot&&pay&&ext&&s.bot_id&&s.extension_account_id);},
   async rate(scope,max=8,seconds=900){const n=await db.rpc('rate',{p_key:await hash(scope),p_seconds:seconds});assert(n<=max,'RATE_LIMIT',429);},
   audit:(action,actor='system',detail={})=>db.insert('audit',{action,actor:String(actor),detail}),
-  async lease(scope,fn){const owner=crypto.randomUUID();assert(await db.rpc('lease',{p_key:scope,p_owner:owner,p_seconds:90}),'BUSY_RETRY',503);try{return await fn();}finally{await db.delete('leases',`key=eq.${encodeURIComponent(scope)}&owner=eq.${owner}`).catch(()=>{});}},
+  async lease(scope,fn){const owner=crypto.randomUUID();assert(await db.rpc('lease',{p_key:scope,p_owner:owner,p_seconds:180}),'BUSY_RETRY',503);try{return await fn();}finally{await db.delete('leases',`key=eq.${encodeURIComponent(scope)}&owner=eq.${owner}`).catch(()=>{});}},
   async session(admin,stage='mfa',minutes=5){const token=random();await db.insert('sessions',{token_hash:await hash(token),admin_id:admin.id,stage,expires_at:new Date(Date.now()+minutes*60000).toISOString()});return token;}
  };return ctx;
 }
