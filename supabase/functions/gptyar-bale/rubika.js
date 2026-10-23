@@ -42,7 +42,7 @@ export function normalizeRubikaUpdate(body){
 }
 export class Rubika {
  constructor(token,transport=fetch){
-  assert(typeof token==='string'&&token.length>=10&&token.length<=512&&!/[\\\s/?#]/.test(token),'INVALID_RUBIKA_TOKEN');
+  assert(typeof token==='string'&&token.length>=10&&token.length<=512&&!/\s/.test(token)&&!['/','?','#','\\'].some(ch=>token.includes(ch)),'INVALID_RUBIKA_TOKEN');
   this.token=token;
   this.transport=transport;
  }
