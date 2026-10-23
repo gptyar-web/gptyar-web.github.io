@@ -55,3 +55,33 @@ test('customer attaches an existing token only when it appears under the configu
  assert.equal(seen.args.p_remote,'sub-1');
  assert.equal(seen.args.p_user,123);
 });
+
+test('admin validation is not blocked by unrelated legacy subscriber data',async()=>{
+ const m=mockApi();
+ const transport=async(url,opts)=>{
+  if(url.endsWith('/subscribers/all'))return new Response(JSON.stringify({accountId:'account-1',subscribers:[{legacy:true}]}),{status:200});
+  return m.transport(url,opts);
+ };
+ const ext=new Extension(adminToken,'4.6.5',transport);
+ assert.deepEqual(await ext.validate(),{accountId:'account-1',count:1});
+ await assert.rejects(()=>ext.list(),{code:'EXTENSION_SUBSCRIBER_FORMAT'});
+});
+test('legacy numeric subscription identifiers can be used for existing user tokens',async()=>{
+ const transport=async(url)=>{
+  if(url.endsWith('/subscribers/all'))return new Response(JSON.stringify({accountId:'account-1',subscribers:[{subscriptionId:42,token:'personal-token',name:'User',expiresAt:null}]}),{status:200});
+  return new Response(JSON.stringify({account:{id:'account-1'}}),{status:200});
+ };
+ const ext=new Extension(adminToken,'4.6.5',transport);
+ assert.equal((await ext.list()).subscribers[0].remote_id,'42');
+ assert.equal((await ext.list()).subscribers[0].token,'personal-token');
+});
+test('upstream validation errors with a 200 status are not misreported as schema mismatch',async()=>{
+ const transport=async()=>new Response(JSON.stringify({error:'Access denied'}),{status:200});
+ await assert.rejects(()=>new Extension(adminToken,'4.6.5',transport).validate(),{code:'EXTENSION_REJECTED'});
+});
+test('invalid upstream response shapes identify the failing stage without exposing credentials',async()=>{
+ const missingAccount=async()=>new Response(JSON.stringify({message:'success'}),{status:200});
+ await assert.rejects(()=>new Extension(adminToken,'4.6.5',missingAccount).validate(),{code:'EXTENSION_VALIDATE_FORMAT'});
+ const missingList=async(url)=>new Response(JSON.stringify(url.endsWith('/validate')?{account:{id:'account-1'}}:{accountId:'account-1'}),{status:200});
+ await assert.rejects(()=>new Extension(adminToken,'4.6.5',missingList).validate(),{code:'EXTENSION_LIST_FORMAT'});
+});
