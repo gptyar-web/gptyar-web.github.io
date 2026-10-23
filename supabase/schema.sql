@@ -52,7 +52,7 @@ create table public.gpyb_coupons (
  id uuid primary key default gen_random_uuid(), code text not null unique check(code ~ '^[A-Z0-9_-]{3,32}$'),
  kind text not null check(kind in ('percent','fixed')), value integer not null check(value>0),
  max_uses integer not null default 100 check(max_uses>0), per_user_limit integer not null default 1 check(per_user_limit>0),
- expires_at timestamptz not null, active boolean not null default true,
+ expires_at timestamptz, active boolean not null default true,
  created_at timestamptz not null default now(), check(kind<>'percent' or value<=100)
 );
 create table public.gpyb_subscriptions (
@@ -178,7 +178,7 @@ begin
  sub:=s.daily_price_toman::bigint*p_days;
  if p_coupon is not null then
   select * into c from public.gpyb_coupons where code=upper(trim(p_coupon)) for update;
-  if not found or not c.active or c.expires_at<=now() then raise exception 'INVALID_COUPON'; end if;
+  if not found or not c.active or (c.expires_at is not null and c.expires_at<=now()) then raise exception 'INVALID_COUPON'; end if;
   select count(*) into used from public.gpyb_orders where coupon_id=c.id and (paid_at is not null or status='checkout' or(status='pending' and expires_at>now()));
   if used>=c.max_uses then raise exception 'COUPON_EXHAUSTED'; end if;
   select count(*) into used from public.gpyb_orders where coupon_id=c.id and bale_id=p_user and (paid_at is not null or status='checkout' or(status='pending' and expires_at>now()));
