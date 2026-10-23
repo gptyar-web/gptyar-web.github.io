@@ -13,7 +13,9 @@ export function normalizeSubscriber(s){
  assert((typeof id==='string'&&id.trim()!==''&&id.length<=256)||(typeof id==='number'&&Number.isSafeInteger(id)),'EXTENSION_SUBSCRIBER_FORMAT',502);
  const token=typeof s.token==='string'&&s.token.length>=8&&s.token.length<=512&&!s.token.startsWith('@')&&!/[\s\u0000-\u001f\u007f]/.test(s.token)?s.token:null;
  assert(s.expiresAt==null||(typeof s.expiresAt==='string'&&Number.isFinite(Date.parse(s.expiresAt))),'EXTENSION_SUBSCRIBER_FORMAT',502);
- return {remote_id:String(id),token,name:String(s.name||''),expires_at:s.expiresAt||null};
+ // Use text for local keys, but preserve the original JSON type for upstream mutations.
+ // v4.6.5 passes subscriptionId from subscribers/all directly into the update request.
+ return {remote_id:String(id),upstream_id:id,token,name:String(s.name||''),expires_at:s.expiresAt||null};
 }
 export function verifyPayment(order,payment,tx,user){assert(Number.isSafeInteger(payment.total_amount)&&payment.total_amount>0&&typeof payment.telegram_payment_charge_id==='string'&&payment.telegram_payment_charge_id.length>0,'PAYMENT_MISMATCH');assert(String(order.bale_id)===String(user)&&payment.currency==='IRR'&&Number(payment.total_amount)===Number(order.total_toman)*10,'PAYMENT_MISMATCH');assert(tx?.status==='paid'&&String(tx.id)===String(payment.telegram_payment_charge_id)&&String(tx.userID)===String(user)&&Number(tx.amount)===Number(payment.total_amount),'PAYMENT_NOT_VERIFIED');if(order.pre_checkout_id)assert(order.pre_checkout_id===payment.telegram_payment_charge_id,'PAYMENT_MISMATCH');}
 export const LABELS={pending:'در انتظار پرداخت',checkout:'در حال پرداخت',paid:'پرداخت‌شده',provisioning:'در حال فعال‌سازی',fulfilled:'تکمیل‌شده',review:'نیازمند بررسی',cancelled:'لغوشده',expired:'منقضی‌شده'};

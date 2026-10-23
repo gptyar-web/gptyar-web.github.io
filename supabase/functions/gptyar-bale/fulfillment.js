@@ -57,7 +57,7 @@ export async function fulfill(ctx,orderId,{reconcileOnly=false,recoveryToken=nul
     await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'provisioning',target_expires_at:target,error_code:null});
     if(!confirmed(remote.expires_at,target)){
      capacity(listing,target);
-     await client.update(remote.remote_id,target);
+     await client.update(remote.upstream_id??remote.remote_id,target);
      const after=await client.list();scope(after,settings);remote=after.subscribers.find(s=>s.remote_id===sub.remote_id);
     }
     assert(remote&&confirmed(remote.expires_at,target),'EXTENSION_NOT_CONFIRMED',502);
