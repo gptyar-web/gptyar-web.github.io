@@ -1,14 +1,29 @@
 import {assert,AppError} from './domain.js';
 import {Bale,Extension} from './clients.js';
+import {Rubika} from './rubika.js';
 import {random} from './crypto.js';
 
 export async function saveIntegration(ctx,b,actor){
- assert(['bale_bot','bale_payment','extension_admin'].includes(b.kind)&&typeof b.token==='string','INVALID_INPUT');
+ assert(['bale_bot','bale_payment','extension_admin','rubika_bot'].includes(b.kind)&&typeof b.token==='string','INVALID_INPUT');
  const token=b.token.trim();await ctx.rate('integration:'+actor,20,300);
  return ctx.lease('integrations',async()=>{
   const settings=await ctx.settings();
   const persist=async(meta={},webhook=null)=>ctx.db.rpc('save_integration',{p_kind:b.kind,p_cipher:await ctx.encrypt(token,'secret:'+b.kind),p_webhook:webhook?await ctx.encrypt(webhook,'secret:webhook'):null,p_meta:meta});
   const hasOrders=async()=>!!(await ctx.db.one('orders','select=id&or=(paid_at.not.is.null,status.in.(pending,checkout))'));
+  if(b.kind==='rubika_bot'){
+   // Token and webhook nonce are stored AES-GCM encrypted, never in Pages.
+   assert(token.length>=10&&token.length<=512&&!/\\s/.test(token),'INVALID_RUBIKA_TOKEN');
+   const client=new Rubika(token,ctx.transport);
+   const me=await client.call('getMe'),bot=me?.bot||me;
+   assert(bot&&typeof bot.bot_id==='string'&&bot.bot_id&&typeof bot.username==='string','INVALID_RUBIKA_TOKEN');
+   const freshWebhook=random(),url=`${ctx.env.SUPABASE_URL}/functions/v1/gptyar-bale/rubika/webhook/${freshWebhook}`;
+   await client.call('updateBotEndpoints',{type:'ReceiveUpdate',url});
+   // Save after successful registration, so no invalid config is persisted.
+   await ctx.saveSecret('rubika_webhook',freshWebhook);
+   await ctx.saveSecret('rubika_bot',token);
+   await ctx.audit('integration.rubika_connected',actor,{username:bot.username});
+   return{ok:true,username:bot.username,share_url:bot.share_url||null};
+  }
   if(b.kind==='bale_bot'){
    assert(/^\d+:[A-Za-z0-9_-]{20,200}$/.test(token),'INVALID_BOT_TOKEN');
    const client=new Bale(token,ctx.transport),me=await client.call('getMe');assert(me?.is_bot&&Number.isSafeInteger(me.id),'INVALID_BOT_TOKEN');
