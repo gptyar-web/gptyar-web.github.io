@@ -1,10 +1,20 @@
 import {assert,expiry,AppError} from './domain.js';
 import {hash} from './crypto.js';
+// Legacy order markers are removed only from customer-visible names, not from access tokens.
+export function subscriberDisplayName(value){
+ const cleaned=String(value||'').replace(/\s*\[GY:[a-f0-9-]{36}\]\s*/gi,' ').replace(/\s+/g,' ').trim();
+ assert(cleaned.length>=2&&cleaned.length<=160&&!/[<>\u0000-\u001f]/.test(cleaned),'EXTENSION_SUBSCRIBER_NAME',422);
+ return cleaned;
+}
 export async function attachToken(ctx,user,token){
  assert(typeof token==='string'&&token.length>=8&&token.length<=512&&!token.startsWith('@')&&!/[\s\u0000-\u001f]/.test(token),'INVALID_USER_TOKEN');
- const client=await ctx.extension(),listing=await client.list(),settings=await ctx.settings();assert(listing.accountId===settings.extension_account_id,'EXTENSION_SCOPE',409);
+ const client=await ctx.extension(),listing=await client.list(),settings=await ctx.settings();
+ assert(listing.accountId===settings.extension_account_id,'EXTENSION_SCOPE',409);
  const remote=listing.subscribers.find(s=>s.token===token);assert(remote,'TOKEN_NOT_FOUND',404);
- const fingerprint=await hash(token);return ctx.db.rpc('bind_token',{p_user:user,p_remote:remote.remote_id,p_hash:fingerprint,p_cipher:await ctx.encrypt(token,'subscriber'),p_expiry:remote.expires_at});
+ const displayName=subscriberDisplayName(remote.name);
+ const fingerprint=await hash(token);
+ const sub=await ctx.db.rpc('bind_token',{p_user:user,p_remote:remote.remote_id,p_hash:fingerprint,p_cipher:await ctx.encrypt(token,'subscriber'),p_expiry:remote.expires_at});
+ return {...sub,remote_name:displayName};
 }
 export async function fulfill(ctx,orderId,{reconcileOnly=false}={}){
  return ctx.lease(`order:${orderId}`,async()=>{
@@ -24,16 +34,24 @@ export async function fulfill(ctx,orderId,{reconcileOnly=false}={}){
     remote=(await client.list()).subscribers.find(s=>s.remote_id===sub.remote_id);
     assert(remote&&Date.parse(remote.expires_at)>=Date.parse(target),'EXTENSION_NOT_CONFIRMED',502);
    }else{
-    const marker=`[GY:${order.id}]`;
-    const matches=listing.subscribers.filter(s=>s.name.includes(marker));assert(matches.length<=1,'EXTENSION_DUPLICATE',409);remote=matches[0];
-    if(!remote){
-     // A timeout or interrupted create needs reconciliation; never blindly create again.
-     assert(!reconcileOnly&&!['provisioning','review'].includes(order.status),'RECONCILIATION_REQUIRED',409);
-     const target=expiry(null,order.days);await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'provisioning',target_expires_at:target});
-     try{await client.create(`${order.full_name} ${marker}`,target);}catch(e){if(e.definiteRejection)await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'paid',error_code:e.code});throw e;}
-     const found=(await client.list()).subscribers.filter(s=>s.name.includes(marker));assert(found.length===1,'RECONCILIATION_REQUIRED',409);remote=found[0];
-     assert(Date.parse(remote.expires_at)>=Date.parse(target),'EXTENSION_NOT_CONFIRMED',502);
-    }
+    // The extension's display name contains only the real first and last name.
+    // Avoid automatic reconciliation by name: two customers can share one name.
+    // An ambiguous creation is held for review instead of risking a duplicate account.
+    assert(!reconcileOnly&&!['provisioning','review'].includes(order.status),'RECONCILIATION_REQUIRED',409);
+    const target=order.target_expires_at||expiry(null,order.days);
+    remote=await ctx.lease('extension:create',async()=>{
+     const before=(await client.list()).subscribers;
+     const known=new Set(before.map(s=>s.remote_id));
+     await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'provisioning',target_expires_at:target});
+     try{await client.create(order.full_name,target);}
+     catch(e){if(e.definiteRejection)await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'paid',error_code:e.code});throw e;}
+     const added=(await client.list()).subscribers.filter(s=>!known.has(s.remote_id)&&s.name===order.full_name);
+     assert(added.length===1,'RECONCILIATION_REQUIRED',409);
+     const created=added[0];
+     assert(Date.parse(created.expires_at)>=Date.parse(target),'EXTENSION_NOT_CONFIRMED',502);
+     return created;
+    });
+
    }
    assert(remote?.token,'EXTENSION_CONTRACT',502);
    return ctx.db.rpc('complete',{p_order:order.id,p_remote:remote.remote_id,p_hash:await hash(remote.token),p_cipher:await ctx.encrypt(remote.token,'subscriber'),p_expiry:remote.expires_at});
