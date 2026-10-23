@@ -17,7 +17,8 @@ export function baleBridgeLink(username,nonce){
 export function verifyBaleBridgePayment({order,binding,success,transaction,payerId}){
  assert(order&&binding&&success&&transaction,'PAYMENT_MISMATCH',409);
  assert(typeof order.id==='string'&&order.id===binding.order_id,'PAYMENT_MISMATCH',409);
- assert(binding.state==='claimed'&&String(binding.bale_user_id)===String(payerId),'PAYMENT_MISMATCH',409);
+ assert(['claimed','paid'].includes(binding.state)&&String(binding.bale_user_id)===String(payerId),'PAYMENT_MISMATCH',409);
+ if(binding.state==='paid')assert(order.charge_id===success.telegram_payment_charge_id&&order.paid_at,'PAYMENT_MISMATCH',409);
  assert(String(success.invoice_payload)===order.id,'PAYMENT_MISMATCH',409);
  assert(success.currency==='IRR'&&Number(success.total_amount)===Number(order.total_toman)*10
    &&Number(order.total_toman)>0,'PAYMENT_MISMATCH',409);
