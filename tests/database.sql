@@ -1,0 +1,41 @@
+-- Run against an installed schema. Every fixture is rolled back.
+begin;
+do $$
+declare o public.gpyb_orders; other public.gpyb_orders; s public.gpyb_subscriptions; c text:='TEST_'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,12)); a uuid; result jsonb; rejected boolean;
+begin
+ update public.gpyb_settings set sales_enabled=true where id;
+ insert into public.gpyb_customers(bale_id,first_name,last_name) values(9000000000001,'آزمایش','اول'),(9000000000002,'آزمایش','دوم');
+ insert into public.gpyb_coupons(code,kind,value,max_uses,expires_at) values(c,'percent',20,1,now()+interval '1 day');
+ select * into o from public.gpyb_new_order(9000000000001,7,'purchase',c);
+ if o.subtotal_toman<>245000 or o.discount_toman<>49000 or o.total_toman<>196000 then raise exception 'TEST_QUOTE_FAILED'; end if;
+ rejected:=false;
+ begin perform public.gpyb_new_order(9000000000002,7,'purchase',c); exception when others then if sqlerrm='COUPON_EXHAUSTED' then rejected:=true; else raise; end if; end;
+ if not rejected then raise exception 'TEST_COUPON_CAPACITY_FAILED'; end if;
+ if public.gpyb_precheckout(o.id,9000000000002,'test-charge',1960000,'IRR') then raise exception 'TEST_PAYER_FAILED'; end if;
+ if public.gpyb_precheckout(o.id,9000000000001,'test-charge',196000,'IRR') then raise exception 'TEST_TOMAN_RIAL_FAILED'; end if;
+ if not public.gpyb_precheckout(o.id,9000000000001,'test-charge',1960000,'IRR') then raise exception 'TEST_PRECHECKOUT_FAILED'; end if;
+ select * into o from public.gpyb_record_payment(o.id,9000000000001,'test-charge','test-provider',1960000,'IRR');
+ select * into o from public.gpyb_record_payment(o.id,9000000000001,'test-charge','test-provider',1960000,'IRR');
+ if o.status<>'paid' then raise exception 'TEST_DUPLICATE_PAYMENT_FAILED'; end if;
+ select * into o from public.gpyb_complete(o.id,'test-remote','test-token-hash','test-encrypted-token',now()+interval '7 days');
+ select * into o from public.gpyb_complete(o.id,'test-remote','test-token-hash','test-encrypted-token',now()+interval '7 days');
+ if o.status<>'fulfilled' or (select count(*) from public.gpyb_subscriptions where bale_id=9000000000001)<>1 then raise exception 'TEST_DUPLICATE_FULFILLMENT_FAILED'; end if;
+ rejected:=false;
+ begin perform public.gpyb_bind_token(9000000000002,'test-remote','test-token-hash','test-encrypted-token',now()); exception when others then if sqlerrm='TOKEN_NOT_OWNED' then rejected:=true; else raise; end if; end;
+ if not rejected then raise exception 'TEST_TOKEN_OWNERSHIP_FAILED'; end if;
+ if public.gpyb_lease('test-lease',gen_random_uuid(),90) is not true or public.gpyb_lease('test-lease',gen_random_uuid(),90) is not false then raise exception 'TEST_LEASE_FAILED'; end if;
+ if public.gpyb_claim_update(9000000000001,gen_random_uuid()) is not true or public.gpyb_claim_update(9000000000001,gen_random_uuid()) is not false then raise exception 'TEST_UPDATE_DEDUP_FAILED'; end if;
+ insert into public.gpyb_bootstrap(id,code_hash,expires_at) values(true,'test-bootstrap-hash',now()+interval '1 hour') on conflict(id) do update set code_hash=excluded.code_hash,expires_at=excluded.expires_at,used_at=null;
+ a:=public.gpyb_setup('test-bootstrap-hash','test_admin','test-password-hash','test-encrypted-totp','test-challenge');
+ result:=public.gpyb_finish_auth('test-challenge',123456,'test-full-session');
+ if result->>'username'<>'test_admin' or not (result->>'enrolled')::boolean then raise exception 'TEST_SETUP_FAILED'; end if;
+ insert into public.gpyb_sessions(token_hash,admin_id,stage,expires_at) values('test-challenge2',a,'mfa',now()+interval '5 minutes');
+ rejected:=false;
+ begin perform public.gpyb_finish_auth('test-challenge2',123456,'test-session2'); exception when others then if sqlerrm='OTP_REPLAY' then rejected:=true; else raise; end if; end;
+ if not rejected then raise exception 'TEST_OTP_REPLAY_FAILED'; end if;
+ insert into public.gpyb_recovery_codes(code_hash,admin_id) values('test-recovery',a);
+ result:=public.gpyb_finish_auth('test-challenge2',0,'test-session2','test-recovery');
+ if not exists(select 1 from public.gpyb_recovery_codes where code_hash='test-recovery' and used_at is not null) then raise exception 'TEST_RECOVERY_FAILED'; end if;
+end; $$;
+rollback;
+select jsonb_build_object('result','all database assertions passed','remaining_test_customers',(select count(*) from public.gpyb_customers where bale_id in(9000000000001,9000000000002))) as verification;

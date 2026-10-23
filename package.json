@@ -1,0 +1,6 @@
+{
+  "name": "gptyar-bale-panel", "version": "1.0.0", "private": true, "type": "module",
+  "scripts": {"dev":"vite --host 0.0.0.0 --port 5173", "build":"node scripts/clean-build.mjs && vite build && node scripts/publish-assets.mjs", "test":"node --test tests/*.test.js", "check":"node --check web/src/app.js && node --check supabase/functions/gptyar-bale/index.js"},
+  "dependencies":{"qrcode":"1.5.4","@fontsource/vazirmatn":"5.3.0"},
+  "devDependencies":{"vite":"8.3.5"}
+}

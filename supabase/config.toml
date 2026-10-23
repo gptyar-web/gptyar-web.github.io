@@ -1,0 +1,3 @@
+[functions.gptyar-bale]
+verify_jwt = false
+entrypoint = "./functions/gptyar-bale/index.ts"
