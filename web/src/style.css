@@ -25,3 +25,11 @@ html,body,#app,button,input,select,textarea,option,dialog,table,code,pre,svg tex
 .jalali-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px}.jalali-head strong{font-size:14px;color:#334b37}.jalali-head button{border:0;border-radius:9px;background:#f1f6ed;color:#527158;width:35px;height:35px;font-size:15px}
 .jalali-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}.jalali-weekday{color:#97a493;font-size:11px;padding-bottom:9px}.jalali-day{height:37px;border:0;border-radius:9px;background:transparent;font-size:12px;color:#344c36}.jalali-day:hover:not(:disabled){background:#e7f2df}.jalali-day.today{outline:1px solid #8da98a}.jalali-day.selected{background:#638968;color:#fff}.jalali-day:disabled{opacity:.25;cursor:not-allowed}
 .jalali-footer{margin-top:14px;padding-top:12px;border-top:1px solid #eef1eb;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8a9985}.jalali-footer button{border:0;background:none;color:#568461;font-size:11px}
+
+/* Unified Vazirmatn; retained when generating GitHub Pages assets. */
+:root,html,body,body *,body *::before,body *::after{font-family:'GPTYarVazirmatn',Vazirmatn,sans-serif!important}
+.nav-item{font-size:13px!important}.nav-label{font-size:11px!important}.breadcrumb,.header-date{font-size:11px!important}
+.field>span,.integration-card>p,.panel-head p,.notice p,.page-heading p,.integration-detail{font-size:12px!important;line-height:1.9}
+.field input,.field select,.field textarea,.table-scroll td,.table-scroll th{font-size:12px!important}
+.coupon-info small,.coupon-info code,.coupon-toggle{font-size:11px!important}
+@media(max-width:700px){.nav-item{font-size:12px!important}.field input,.field select,.field textarea{font-size:13px!important}}
