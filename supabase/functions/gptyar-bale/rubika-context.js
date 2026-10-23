@@ -1,5 +1,6 @@
 import {Rubika,normalizeRubikaUpdate} from './rubika.js';
 import {assert} from './domain.js';
+import {hash} from './crypto.js';
 
 // The legacy commerce engine stores bigint customers. Rubika users get a
 // stable negative integer; Bale users are always positive and never overlap.
@@ -30,7 +31,7 @@ export async function receiveRubika(ctx,body,handleMessage){
  try{
   await ctx.lease(`rubika:chat:${event.userId}`,async()=>{
    const view=await rubikaView(ctx);
-   view.requestKey=event.eventId;
+   view.requestKey='rb:'+(await hash(event.eventId)).slice(0,64);
    await handleMessage(view,{
     message_id:event.messageId,
     text:event.text,
