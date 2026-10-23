@@ -39,7 +39,8 @@
         <label><input type="radio" name="coupon_expiry_mode" value="dated" checked><span>انتخاب تاریخ انقضا</span></label>
         <label><input type="radio" name="coupon_expiry_mode" value="unlimited"><span>بدون تاریخ انقضا ∞</span></label>
       </div>
-      <div class="gpy-expiry-calendar">
+      <button type="button" class="gpy-date-trigger" aria-expanded="false"><span><small>تاریخ و ساعت انتخاب‌شده</small><strong></strong></span><span class="gpy-date-chevron">⌄</span></button>
+      <div class="gpy-expiry-calendar" hidden>
         <div class="gpy-cal-heading">
           <div><span class="gpy-cal-kicker">تقویم شمسی</span><strong class="gpy-cal-month-label"></strong></div>
           <div class="gpy-cal-nav">
@@ -59,9 +60,13 @@
           </div>
         </div>
         <div class="gpy-cal-picked" role="status" aria-live="polite"></div>
+        <div class="gpy-cal-confirm"><button type="button" data-cal-confirm>تأیید تاریخ و ساعت ✓</button></div>
       </div>
       <p class="gpy-cal-hint">تاریخ‌ها شمسی نمایش داده می‌شوند و زمان در سرور به‌صورت دقیق ذخیره می‌شود.</p>`;
     target.replaceWith(shell);
+    const calendarView=shell.querySelector('.gpy-expiry-calendar'),opener=shell.querySelector('.gpy-date-trigger');
+    opener.addEventListener('click',()=>{calendarView.hidden=!calendarView.hidden;opener.setAttribute('aria-expanded',String(!calendarView.hidden));});
+    shell.querySelector('[data-cal-confirm]').addEventListener('click',()=>{calendarView.hidden=true;opener.setAttribute('aria-expanded','false');opener.focus();});
     let chosen=new Date(iranDay().getTime()+DAY),monthStart=beginning(chosen);
     const days=shell.querySelector('.gpy-cal-days'),grid=shell.querySelector('.gpy-cal-grid');
     days.innerHTML=WEEK.map(d=>`<span>${d}</span>`).join('');
@@ -70,7 +75,9 @@
     for(let i=0;i<60;i++)minuteEl.add(new Option(num2(i),String(i)));
     hourEl.value='23';minuteEl.value='59';
     function picked(){
-      shell.querySelector('.gpy-cal-picked').textContent='پایان اعتبار: '+persFull.format(chosen)+'، ساعت '+num2(hourEl.value)+':'+num2(minuteEl.value);
+      const summary=persFull.format(chosen)+'، ساعت '+num2(hourEl.value)+':'+num2(minuteEl.value);
+      shell.querySelector('.gpy-cal-picked').textContent='پایان اعتبار: '+summary;
+      shell.querySelector('.gpy-date-trigger strong').textContent=summary;
     }
     function render(){
       const p=jdate(monthStart);
@@ -100,7 +107,7 @@
     hourEl.addEventListener('change',picked);minuteEl.addEventListener('change',picked);
     shell.querySelectorAll('input[name="coupon_expiry_mode"]').forEach(input=>input.addEventListener('change',()=>{
       const unlimited=shell.querySelector('input[value="unlimited"]').checked;
-      shell.querySelector('.gpy-expiry-calendar').hidden=unlimited;
+      opener.hidden=unlimited;calendarView.hidden=unlimited;opener.setAttribute('aria-expanded',String(!unlimited));
       shell.querySelector('.gpy-cal-hint').textContent=unlimited?'این کد تا زمان غیرفعال‌سازی یا رسیدن به سقف استفاده، معتبر می‌ماند.':'تاریخ‌ها شمسی نمایش داده می‌شوند و زمان در سرور به‌صورت دقیق ذخیره می‌شود.';
     }));
     form.addEventListener('submit',async event=>{
