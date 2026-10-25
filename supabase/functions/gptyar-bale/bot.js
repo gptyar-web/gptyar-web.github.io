@@ -1,6 +1,5 @@
 import {assert,integer,name,verifyPayment,LABELS} from './domain.js';
 import {attachToken,chooseSubscription,checkAvailability,fulfill,deliver} from './fulfillment.js';
-import {issueRubikaBaleLink,startBaleBridge,rubikaBridgeReceipt} from './rubika-payment.js';
 const MENU=[['خرید اشتراک','تمدید با توکن'],['ثبت توکن پس از پرداخت','دریافت مجدد توکن'],['دریافت صورتحساب','سفارش‌های من'],['آموزش و دانلود','پشتیبانی']];
 const OS=[['اندروید','آیفون'],['ویندوز','مک']];
 const YESNO=[['بله','خیر'],['لغو']];
@@ -11,10 +10,7 @@ export async function preCheckout(ctx,q){
  const bale=await ctx.bale();let ok=false;
  assert(q&&q.id!==undefined&&String(q.id).trim().length>0&&String(q.id).length<=128,'INVALID_CHECKOUT');
  try{if(Number.isSafeInteger(q.from?.id)&&q.from.id>0&&Number.isSafeInteger(q.total_amount)&&q.total_amount>0&&/^[a-f0-9-]{36}$/.test(q.invoice_payload||'')&&await ctx.ready()){
-  const binding=await ctx.db.one('rubika_bridges',`order_id=eq.${q.invoice_payload}`);
-  const payload=binding?{p_order:q.invoice_payload,p_bale:q.from.id,p_charge:String(q.id),p_amount:q.total_amount,p_currency:q.currency}:
-   {p_order:q.invoice_payload,p_user:q.from.id,p_charge:String(q.id),p_amount:q.total_amount,p_currency:q.currency};
-  ok=await ctx.db.rpc(binding?'rubika_bridge_precheckout':'precheckout',payload);
+  ok=await ctx.db.rpc('precheckout',{p_order:q.invoice_payload,p_user:q.from.id,p_charge:String(q.id),p_amount:q.total_amount,p_currency:q.currency});
  }}catch{ok=false;}
  await bale.call('answerPreCheckoutQuery',{pre_checkout_query_id:String(q.id),ok,...(!ok?{error_message:'سفارش یا مبلغ پرداخت معتبر نیست، خرید غیرفعال است یا اعتبار صورتحساب پایان یافته؛ از ربات صورتحساب جدید بگیرید.'}:{})});
 }
@@ -23,12 +19,6 @@ async function paidOrder(ctx,user){return ctx.db.one('orders',`bale_id=eq.${user
 async function askName(ctx,bale,user,kind,subscriptionId=null){await state(ctx,user,'first_name',{kind,subscription_id:subscriptionId});await bale.send(user,'نام خود را ارسال کنید.',[['لغو']]);}
 export async function sendInvoice(ctx,bale,user,order){
  assert(order.status==='pending'&&!order.paid_at&&Date.parse(order.expires_at)>Date.now(),'INVOICE_EXPIRED',409);
- if(ctx.platform==='rubika'){
-  const link=await issueRubikaBaleLink(ctx,order);
-  await state(ctx,user,'await_payment',{order_id:order.id});
-  await bale.send(user,`پرداخت سفارش روبیکا از همان کیف پول بله انجام می‌شود.\n\nنام: ${order.full_name}\nمدت: ${order.days} روز\nمبلغ نهایی: ${money(order.total_toman)} تومان\n\nبرای پرداخت، لینک زیر را باز کنید و صورتحساب داخل ربات بله را پرداخت کنید:\n${link}\n\nپس از پرداخت، نتیجه و توکن در همین گفتگوی روبیکا ارسال خواهد شد. اعتبار سفارش: ۳۰ دقیقه.`,[['دریافت صورتحساب','سفارش‌های من'],['منوی اصلی','پشتیبانی']]);
-  return;
- }
  await state(ctx,user,'await_payment',{order_id:order.id});
  try{
   await bale.send(user,`سفارش ${order.kind==='renewal'?'تمدید':'خرید'} ChatGPT Plus\nنام: ${order.full_name}\nمدت: ${money(order.days)} روز\nمبلغ اولیه: ${money(order.subtotal_toman)} تومان\nتخفیف: ${money(order.discount_toman)} تومان\nقابل پرداخت: ${money(order.total_toman)} تومان\n\nصورتحساب تا ۳۰ دقیقه پس از ثبت سفارش معتبر است.`,[['دریافت صورتحساب','سفارش‌های من'],['منوی اصلی','پشتیبانی']]);
@@ -77,15 +67,6 @@ async function receipt(ctx,bale,user,p,transaction=null){
   await activate(ctx,bale,paid);
  }else{await state(ctx,user,'paid_choice',{order_id:paid.id});await bale.send(user,`پرداخت ${money(paid.total_toman)} تومان تأیید شد ✅\nبرای ساخت حساب، «دریافت توکن جدید» را بزنید؛ اگر توکن دارید «ثبت توکن موجود» را انتخاب کنید.`,TOKEN);}
 }
-// Channel-independent delivery after authenticated wallet settlement.
-export async function completePaidOrder(ctx,paid){
- const bale=await ctx.bale();
- const user=paid.bale_id;
- if(paid.status==='fulfilled'){await deliver(ctx,paid);return;}
- if(paid.subscription_id)return activate(ctx,bale,paid);
- await state(ctx,user,'paid_choice',{order_id:paid.id});
- await bale.send(user,`پرداخت ${money(paid.total_toman)} تومان تأیید شد ✅\nبرای ساخت حساب، «دریافت توکن جدید» را بزنید؛ اگر توکن دارید «ثبت توکن موجود» را انتخاب کنید.`,TOKEN);
-}
 export async function reconcilePayment(ctx,order){
  assert(order.pre_checkout_id,'NO_CHECKOUT',409);
  const bale=await ctx.bale(),tx=await bale.call('inquireTransaction',{transaction_id:order.pre_checkout_id});
@@ -100,12 +81,7 @@ export async function handleMessage(ctx,message){
  const user=message.from.id,bale=await ctx.bale();
  ctx.requestKey=ctx.requestKey||(ctx.updateId!==undefined?'update:'+ctx.updateId:Number.isSafeInteger(message.message_id)?'message:'+message.message_id:null);
  await ctx.db.upsert('customers',{bale_id:user},'bale_id');
- if(message.successful_payment){
-  if(await rubikaBridgeReceipt(ctx,message,completePaidOrder))return;
-  return receipt(ctx,bale,user,message.successful_payment);
- }
- if(ctx.platform!=='rubika'&&/^\/start rb_[a-f0-9]{64}$/.test(String(message.text||'').trim()))
-  return startBaleBridge(ctx,message);
+ if(message.successful_payment)return receipt(ctx,bale,user,message.successful_payment);
  let text=String(message.text||'').trim();if(!text)return;
  let convo=await ctx.db.one('conversations',`bale_id=eq.${user}`)||{state:'menu',data:{}};
  if(Date.now()-Date.parse(convo.updated_at||0)>86400000&&!['paid_choice','paid_token'].includes(convo.state))convo={state:'menu',data:{}};
