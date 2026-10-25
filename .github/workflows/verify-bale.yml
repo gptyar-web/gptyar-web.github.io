@@ -1,0 +1,22 @@
+name: Verify Bale-only changes
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [refactor/bale-only-token-rotation-20261025]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: npm test

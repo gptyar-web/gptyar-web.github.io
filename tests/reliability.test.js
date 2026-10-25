@@ -48,3 +48,15 @@ test('reconnecting the same bot preserves its current webhook secret',async()=>{
  const f=integrationFixture();await saveIntegration(f.ctx,{kind:'bale_bot',token:'123:'+'t'.repeat(24)},'admin');
  assert.ok(f.calls.find(c=>c.method==='setWebhook').body.url.endsWith('/'+'f'.repeat(64)));
 });
+test('rotating the Bale token persists the replacement for the same bot without changing webhook',async()=>{
+ const f=integrationFixture(),token='123:'+'n'.repeat(24);
+ const result=await saveIntegration(f.ctx,{kind:'bale_bot',token},'admin');
+ assert.equal(result.rotated,true);assert.equal(result.username,'test_bot');
+ assert.deepEqual(f.saved[0].args.p_meta,{bot_id:123,username:'test_bot'});
+ assert.equal(f.saved[0].args.p_cipher,'encrypted:secret:bale_bot');
+ assert.equal(f.calls.find(c=>c.method==='setWebhook').body.url,'https://db.invalid/functions/v1/gptyar-bale/webhook/'+'f'.repeat(64));
+});
+test('unsupported integrations are rejected before any token is saved',async()=>{
+ const f=integrationFixture();await assert.rejects(()=>saveIntegration(f.ctx,{kind:'unsupported',token:'unused'},'admin'),{code:'INVALID_INPUT'});
+ assert.equal(f.saved.length,0);
+});

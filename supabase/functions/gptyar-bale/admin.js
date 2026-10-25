@@ -17,7 +17,7 @@ export async function adminRoute(ctx,path,req,b,auth){
  }
  if(path==='/overview'&&req.method==='GET'){
   const [metrics,recent,settings,secrets]=await Promise.all([ctx.db.rpc('dashboard'),ctx.db.list('orders','select=id,full_name,kind,days,total_toman,status,created_at&order=created_at.desc&limit=6'),ctx.settings(),ctx.db.list('secrets','select=key,updated_at')]);
-  return{metrics,recent,settings,integrations:secrets.map(s=>({key:s.key,updated_at:s.updated_at}))};
+  return{metrics,recent,settings,integrations:secrets.filter(s=>['bale_bot','bale_payment','extension_admin'].includes(s.key)).map(s=>({key:s.key,updated_at:s.updated_at}))};
  }
  const query=new URL(req.url).searchParams;
  if(path==='/orders'&&req.method==='GET'){
@@ -53,7 +53,7 @@ export async function adminRoute(ctx,path,req,b,auth){
  const coupon=path.match(/^\/coupons\/([a-f0-9-]{36})$/);
  if(coupon&&req.method==='PATCH'){assert(typeof b.active==='boolean','INVALID_INPUT');const changed=await ctx.db.patch('coupons',`id=eq.${coupon[1]}`,{active:b.active});assert(changed.length===1,'NOT_FOUND',404);await ctx.audit('coupon.updated',actor,{id:coupon[1],active:b.active});return{ok:true};}
  if(path==='/settings'&&req.method==='GET'){
-  const [settings,links,secrets]=await Promise.all([ctx.settings(),ctx.db.list('links','order=os'),ctx.db.list('secrets','select=key,updated_at')]);return{settings,links,integrations:secrets.filter(s=>s.key!=='webhook')};
+  const [settings,links,secrets]=await Promise.all([ctx.settings(),ctx.db.list('links','order=os'),ctx.db.list('secrets','select=key,updated_at')]);return{settings,links,integrations:secrets.filter(s=>['bale_bot','bale_payment','extension_admin'].includes(s.key))};
  }
  if(path==='/settings'&&req.method==='PATCH'){
   const update={};
@@ -76,16 +76,6 @@ export async function adminRoute(ctx,path,req,b,auth){
   const result={};
   try{const bot=await ctx.bale(),me=await bot.call('getMe'),info=await bot.call('getWebhookInfo'),secret=await ctx.secret('webhook');result.bale_bot={ok:!!me.is_bot&&info.url===`${ctx.env.SUPABASE_URL}/functions/v1/gptyar-bale/webhook/${secret}`,username:me.username};}catch(e){result.bale_bot={ok:false,code:e.code};}
   try{const client=await ctx.extension(),d=await client.validate(),s=await ctx.settings();result.extension_admin={ok:d.accountId===s.extension_account_id,count:d.count};}catch(e){result.extension_admin={ok:false,code:e.code};}
-  try{
-   const token=await ctx.secret('rubika_bot');
-   if(!token)result.rubika_bot={ok:false,code:'RUBIKA_NOT_CONFIGURED'};
-   else{
-    const {Rubika}=await import('./rubika.js');
-    const response=await new Rubika(token,ctx.transport).call('getMe');
-    result.rubika_bot={ok:!!(response?.bot?.bot_id||response?.bot_id),
-     username:response?.bot?.username||response?.username||''};
-   }
-  }catch(e){result.rubika_bot={ok:false,code:e.code||'RUBIKA_API_ERROR'};}
   result.bale_payment={saved:!!await ctx.secret('bale_payment'),verified:false};return result;
  }
  if(path==='/audit'&&req.method==='GET'){const page=integer(query.get('page')||1,1,10000),rows=await ctx.db.list('audit',`order=created_at.desc&limit=26&offset=${(page-1)*25}`);return{rows:rows.slice(0,25),has_more:rows.length>25,page};}
