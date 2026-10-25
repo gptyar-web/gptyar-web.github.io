@@ -6,7 +6,7 @@ export class Database {
   let r;try{r=await this.transport(`${this.env.SUPABASE_URL}/rest/v1/${path}`,{method,headers:{apikey:this.env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${this.env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json',Prefer:prefer},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(8000)});}catch{throw new AppError('DATABASE_UNREACHABLE',503);}
   const d=await r.json().catch(()=>null);if(!r.ok){const code=d?.message?.match(/^[A-Z_]+$/)?.[0]||(d?.code==='23505'?'ALREADY_EXISTS':'DATABASE_ERROR');const status=/OTP|CHALLENGE|AUTH_DENIED/.test(code)?401:code==='SETUP_DENIED'?403:r.status===409?409:code!=='DATABASE_ERROR'?400:503;throw new AppError(code,status);}return d;
  }
- async rpc(name,args={}){const result=await this.request(`rpc/gpyb_${name}`,'POST',args);return ['new_order','new_order_v2','checkout_order','bind_token','record_payment','complete','select_subscription','rubika_bridge_claim','rubika_bridge_record'].includes(name)&&Array.isArray(result)?result[0]:result;}
+ async rpc(name,args={}){const result=await this.request(`rpc/gpyb_${name}`,'POST',args);return ['new_order','new_order_v2','checkout_order','bind_token','record_payment','complete','select_subscription'].includes(name)&&Array.isArray(result)?result[0]:result;}
  async one(table,q=''){return(await this.request(`gpyb_${table}?${q}${q?'&':''}limit=1`))[0]||null;}
  list(table,q=''){return this.request(`gpyb_${table}?${q}`);}
  insert(table,body){return this.request(`gpyb_${table}`,'POST',body);}
