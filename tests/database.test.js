@@ -16,7 +16,7 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
   await db.exec(await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8'));
   // Upgrades must also remain safe to reapply after the consolidated fresh schema.
-  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql','20261026150755_replace_integration_tokens_remove_legacy_messaging.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
   await scenario('free checkout is idempotent and consumes exactly one coupon use',async()=>{
    await db.exec("insert into public.gpyb_coupons(code,kind,value,max_uses) values('FREE','percent',100,1)");
    const sql="select * from public.gpyb_checkout_order(101,7,'purchase','FREE',null,null,'update:11')";
@@ -45,6 +45,63 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
    const a=await row("select * from public.gpyb_bind_token(101,'r1','hash1','cipher1',now())"),b=await row("select * from public.gpyb_bind_token(101,'r1','hash2','cipher2',now())");
    assert.equal(a.id,b.id);assert.equal(b.token_hash,'hash2');
    await assert.rejects(()=>query("select * from public.gpyb_bind_token(102,'r1','hash3','cipher3',now())"),/TOKEN_NOT_OWNED/);
+  });
+  await scenario('extension replacement preserves existing paid orders and separates identical remote IDs',async()=>{
+   await db.exec("update public.gpyb_settings set bot_id=123,extension_account_id='old-account'");
+   const old=await row("select * from public.gpyb_bind_token(101,'shared-id','old-hash','old-cipher',now())");
+   const order=await row("select * from public.gpyb_checkout_order(101,7,'purchase',null,null,null,'old-request')");
+   await query("update public.gpyb_orders set paid_at=now(),status='paid' where id=$1",[order.id]);
+   await query("select public.gpyb_save_integration('extension_admin','new-manager',null,'{\"account_id\":\"new-account\"}')");
+   const settings=await row('select * from public.gpyb_settings');assert.equal(settings.extension_account_id,'new-account');assert.equal(settings.sales_enabled,false);
+   assert.equal((await row('select extension_account_id from public.gpyb_orders where id=$1',[order.id])).extension_account_id,'old-account');
+   const current=await row("select * from public.gpyb_bind_token(102,'shared-id','new-hash','new-cipher',now())");
+   assert.notEqual(current.id,old.id);assert.equal(current.extension_account_id,'new-account');
+   assert.equal((await row('select token_hash from public.gpyb_subscriptions where id=$1',[old.id])).token_hash,'old-hash');
+   await db.exec('savepoint wrong_account');
+   await db.exec("savepoint wrong_account");
+   await assert.rejects(()=>query("select * from public.gpyb_complete($1,'shared-id','wrong-hash','cipher',now())",[order.id]),/EXTENSION_SCOPE/);
+   await db.exec("rollback to wrong_account");
+   await db.exec('rollback to wrong_account');
+   await assert.rejects(()=>query("select * from public.gpyb_bind_token(101,'shared-id','other-hash','cipher',now())"),/TOKEN_NOT_OWNED/);
+  });
+  await scenario('same bot token rotation retains wallet while a different bot resets wallet and namespaces updates',async()=>{
+   await db.exec("update public.gpyb_settings set bot_id=123; insert into public.gpyb_secrets(key,ciphertext) values('bale_payment','wallet-old')");
+   await query("select public.gpyb_save_integration('bale_bot','same-bot','webhook-same','{\"bot_id\":123,\"username\":\"same_bot\"}')");
+   assert.equal((await row("select ciphertext from public.gpyb_secrets where key='bale_payment'")).ciphertext,'wallet-old');
+   assert.equal((await row('select sales_enabled from public.gpyb_settings')).sales_enabled,true);
+   const owner='11111111-1111-4111-8111-111111111111';
+   assert.equal((await row('select public.gpyb_claim_bot_update(123,42,$1) ok',[owner])).ok,true);
+   await db.exec("update public.gpyb_updates set status='done' where bot_id=123 and update_id=42");
+   await query("select public.gpyb_save_integration('bale_bot','new-bot','webhook-new','{\"bot_id\":456,\"username\":\"new_bot\"}')");
+   assert.equal((await row("select count(*)::int n from public.gpyb_secrets where key='bale_payment'")).n,0);
+   const settings=await row('select * from public.gpyb_settings');assert.equal(settings.bot_id,456);assert.equal(settings.sales_enabled,false);
+   assert.equal((await row('select public.gpyb_claim_bot_update(456,42,$1) ok',[owner])).ok,true);
+   assert.equal((await row('select public.gpyb_claim_bot_update(456,42,$1) ok',[owner])).ok,false);
+   await db.exec('update public.gpyb_settings set bot_id=123');
+   assert.equal((await row('select public.gpyb_claim_bot_update(123,42,$1) ok',[owner])).ok,false);
+   await query("select public.gpyb_save_integration('bale_payment','wallet-new',null,'{}')");
+   assert.equal((await row("select ciphertext from public.gpyb_secrets where key='bale_payment'")).ciphertext,'wallet-new');
+  });
+  await scenario('invoices from another bot or extension account cannot be paid through the new connection',async()=>{
+   await db.exec("update public.gpyb_settings set bot_id=123,extension_account_id='old-account'");
+   const order=await row("select * from public.gpyb_checkout_order(101,7,'purchase',null,null,null,'invoice-old')");
+   await query("select public.gpyb_save_integration('bale_bot','new-bot','webhook','{\"bot_id\":456}')");
+   await db.exec('update public.gpyb_settings set sales_enabled=true');
+   assert.equal((await row("select public.gpyb_precheckout($1,101,'charge',2450000,'IRR') ok",[order.id])).ok,false);
+   await db.exec("update public.gpyb_settings set bot_id=123,extension_account_id='new-account'");
+   assert.equal((await row("select public.gpyb_precheckout($1,101,'charge',2450000,'IRR') ok",[order.id])).ok,false);
+   assert.equal((await row('select status from public.gpyb_orders where id=$1',[order.id])).status,'pending');
+  });
+  await scenario('retired connection migration removes secrets and RPCs while retaining historical records',async()=>{
+   await db.exec("create table public.gpyb_rubika_users(rubika_id text primary key); insert into public.gpyb_rubika_users values('historical-user'); grant select on public.gpyb_rubika_users to service_role; create function public.gpyb_rubika_identity(text) returns bigint language sql as 'select -1::bigint'; insert into public.gpyb_secrets(key,ciphertext) values('rubika_bot','old-token'),('rubika_webhook','old-webhook'),('bale_payment','wallet')");
+   const migration=await readFile(new URL('../supabase/migrations/20261026150755_replace_integration_tokens_remove_legacy_messaging.sql',import.meta.url),'utf8');
+   await db.exec(migration);await db.exec(migration);
+   assert.equal((await row("select count(*)::int n from public.gpyb_secrets where key like 'rubika%'")).n,0);
+   assert.equal((await row("select count(*)::int n from pg_proc where proname='gpyb_rubika_identity'")).n,0);
+   assert.equal((await row('select count(*)::int n from public.gpyb_rubika_users')).n,1);
+   assert.equal((await row("select has_table_privilege('service_role','public.gpyb_rubika_users','select') ok")).ok,false);
+   assert.equal((await row('select count(*)::int n from public.gpyb_customers')).n,2);
+   assert.equal((await row("select ciphertext from public.gpyb_secrets where key='bale_payment'")).ciphertext,'wallet');
   });
   await scenario('incomplete password changes cannot leave older sessions active',async()=>{
    const a=await row("insert into public.gpyb_admins(username,password_hash,totp_secret,active,last_totp_counter) values('admin','old','encrypted',true,100) returning id");
@@ -76,5 +133,27 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
   });
   // Historical invariants are also run in the isolated database, including TOTP replay and payment duplication.
   await t.test('original SQL payment and TOTP regression suite',async()=>{await db.exec(await readFile(new URL('./database.sql',import.meta.url),'utf8'));});
+ }finally{await db.close();}
+});
+
+test('forward migration backfills an existing installation and preserves ownership on reapply',async()=>{
+ const db=new PGlite(),q=async(sql,p=[]) => (await db.query(sql,p)).rows[0];
+ try{
+  await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
+  const schema=await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8');
+  await db.exec(schema.split('\n-- 20261026150755_replace_integration_tokens_remove_legacy_messaging.sql')[0]);
+  await db.exec("update public.gpyb_settings set bot_id=123,extension_account_id='initial-account',sales_enabled=true; insert into public.gpyb_customers(bale_id,first_name,last_name) values(101,'Test','User')");
+  const sub=await q("select * from public.gpyb_bind_token(101,'legacy-remote','legacy-hash','legacy-cipher',now())");
+  const order=await q("select * from public.gpyb_checkout_order(101,7,'purchase',null,null,null,'update:7')");
+  await db.exec("select public.gpyb_claim_update(7,'11111111-1111-4111-8111-111111111111'); update public.gpyb_updates set status='done'");
+  const migration=await readFile(new URL('../supabase/migrations/20261026150755_replace_integration_tokens_remove_legacy_messaging.sql',import.meta.url),'utf8');
+  await db.exec(migration);
+  assert.equal((await q('select extension_account_id from public.gpyb_subscriptions where id=$1',[sub.id])).extension_account_id,'initial-account');
+  assert.deepEqual(await q('select extension_account_id,bot_id::int from public.gpyb_orders where id=$1',[order.id]),{extension_account_id:'initial-account',bot_id:123});
+  assert.equal((await q('select bot_id::int from public.gpyb_updates where update_id=7')).bot_id,123);
+  await db.exec("select public.gpyb_save_integration('extension_admin','changed',null,'{\"account_id\":\"next-account\"}')");
+  await db.exec(migration);
+  assert.equal((await q('select extension_account_id from public.gpyb_subscriptions where id=$1',[sub.id])).extension_account_id,'initial-account');
+  assert.equal((await q('select extension_account_id from public.gpyb_orders where id=$1',[order.id])).extension_account_id,'initial-account');
  }finally{await db.close();}
 });

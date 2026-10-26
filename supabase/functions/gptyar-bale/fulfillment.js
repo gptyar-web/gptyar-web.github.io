@@ -9,6 +9,7 @@ export function subscriberDisplayName(value){
 // Older extension versions store whole seconds. Allow only their subsecond rounding.
 const confirmed=(actual,target)=>Number.isFinite(Date.parse(actual))&&Date.parse(actual)+999>=Date.parse(target);
 const scope=(listing,settings)=>assert(listing.accountId===settings.extension_account_id,'EXTENSION_SCOPE',409);
+const recordScope=(record,settings)=>assert(!record?.extension_account_id||record.extension_account_id===settings.extension_account_id,'EXTENSION_SCOPE',409);
 function capacity(listing,target,{create=false}={}){
  if(listing.accountType!=='ENTERPRISE')return;
  // These are the limits enforced by the supplied v4.6.5 manager UI.
@@ -20,7 +21,8 @@ export async function checkAvailability(ctx,data){
  const [client,settings]=await Promise.all([ctx.extension(),ctx.settings()]),listing=await client.list();scope(listing,settings);
  let base=null;
  if(data.subscription_id){
-  const sub=await ctx.db.one('subscriptions',`id=eq.${data.subscription_id}`),remote=sub&&listing.subscribers.find(s=>s.remote_id===sub.remote_id);
+  const sub=await ctx.db.one('subscriptions',`id=eq.${data.subscription_id}`);recordScope(sub,settings);
+  const remote=sub&&listing.subscribers.find(s=>s.remote_id===sub.remote_id);
   assert(remote?.token,'TOKEN_NOT_FOUND',404);base=remote.expires_at;
  }
  capacity(listing,expiry(base,data.days),{create:!data.subscription_id});
@@ -38,6 +40,7 @@ export async function chooseSubscription(ctx,orderId,user,token){
   const order=await ctx.db.one('orders',`id=eq.${orderId}&bale_id=eq.${user}`);
   assert(order?.paid_at,'PAYMENT_REQUIRED',409);
   assert(order.status==='paid'&&!order.remote_id&&!order.target_expires_at,'RECONCILIATION_REQUIRED',409);
+  recordScope(order,await ctx.settings());
   const sub=await attachToken(ctx,user,token);
   return ctx.db.rpc('select_subscription',{p_order:orderId,p_user:user,p_subscription:sub.id,p_name:sub.remote_name});
  });
@@ -46,12 +49,14 @@ export async function fulfill(ctx,orderId,{reconcileOnly=false,recoveryToken=nul
  return ctx.lease(`order:${orderId}`,async()=>{
   const order=await ctx.db.one('orders',`id=eq.${orderId}`);assert(order?.paid_at,'PAYMENT_REQUIRED',409);
   if(order.status==='fulfilled')return order;
+  const settings=await ctx.settings();recordScope(order,settings);
   const client=await ctx.extension();
   const work=async()=>{
-   const listing=await client.list(),settings=await ctx.settings();scope(listing,settings);
+   const listing=await client.list();scope(listing,settings);
    let remote;
    if(order.subscription_id){
     const sub=await ctx.db.one('subscriptions',`id=eq.${order.subscription_id}&bale_id=eq.${order.bale_id}`);assert(sub,'TOKEN_NOT_OWNED',409);
+    recordScope(sub,settings);
     remote=listing.subscribers.find(s=>s.remote_id===sub.remote_id);assert(remote?.token,'TOKEN_NOT_FOUND',404);
     const target=order.target_expires_at||expiry(remote.expires_at,order.days);
     await ctx.db.patch('orders',`id=eq.${order.id}`,{status:'provisioning',target_expires_at:target,error_code:null});
@@ -71,11 +76,11 @@ export async function fulfill(ctx,orderId,{reconcileOnly=false,recoveryToken=nul
     remote=listing.subscribers.find(s=>s.token===recoveryToken);
     assert(remote?.token,'TOKEN_NOT_FOUND',404);
     assert(!order.creation_known_ids?.includes(remote.remote_id),'TOKEN_ALREADY_FULFILLED',409);
-    const priorSub=await ctx.db.one('subscriptions',`remote_id=eq.${encodeURIComponent(remote.remote_id)}`);
+    const priorSub=await ctx.db.one('subscriptions',`remote_id=eq.${encodeURIComponent(remote.remote_id)}&extension_account_id=eq.${encodeURIComponent(settings.extension_account_id)}`);
     if(priorSub){const prior=await ctx.db.one('orders',`subscription_id=eq.${priorSub.id}&kind=eq.purchase&status=eq.fulfilled`);assert(!prior,'TOKEN_ALREADY_FULFILLED',409);}
     assert(subscriberDisplayName(remote.name)===subscriberDisplayName(order.full_name),'RECOVERY_NAME_MISMATCH',409);
     assert(confirmed(remote.expires_at,order.target_expires_at),'EXTENSION_NOT_CONFIRMED',409);
-    const used=await ctx.db.one('orders',`remote_id=eq.${encodeURIComponent(remote.remote_id)}&kind=eq.purchase&id=neq.${order.id}`);
+    const used=await ctx.db.one('orders',`remote_id=eq.${encodeURIComponent(remote.remote_id)}&extension_account_id=eq.${encodeURIComponent(settings.extension_account_id)}&kind=eq.purchase&id=neq.${order.id}`);
     assert(!used,'TOKEN_ALREADY_FULFILLED',409);
     await ctx.db.patch('orders',`id=eq.${order.id}`,{remote_id:remote.remote_id});
    }else{

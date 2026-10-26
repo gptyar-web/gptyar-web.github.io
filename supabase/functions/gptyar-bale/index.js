@@ -2,7 +2,6 @@ import {context} from './context.js';
 import {authRoute,authenticate} from './auth.js';
 import {adminRoute} from './admin.js';
 import {handleMessage,preCheckout} from './bot.js';
-import {receiveRubika} from './rubika-context.js';
 import {hash,equal} from './crypto.js';
 import {assert,AppError} from './domain.js';
 const ORIGINS=new Set(['https://gptyar-web.github.io','http://localhost:5173','http://127.0.0.1:5173','http://terminal.local:4173']);
@@ -18,7 +17,7 @@ export async function bodyJSON(req){
  assert(result&&typeof result==='object'&&!Array.isArray(result),'INVALID_JSON');return result;
 }
 export function createHandler(env,transport=fetch){return async req=>{
- const headers={...BASE_HEADERS};let ctx,updateOwner,updateId;
+ const headers={...BASE_HEADERS};let ctx,updateOwner,updateId,botId;
  try{
   const origin=req.headers.get('origin');assert(!origin||ORIGINS.has(origin),'ORIGIN_DENIED',403);
   if(origin){headers['Access-Control-Allow-Origin']=origin;headers.Vary='Origin';}
@@ -28,27 +27,20 @@ export function createHandler(env,transport=fetch){return async req=>{
   if(path==='/health')return new Response(JSON.stringify({ok:true,service:'gptyar-bale',version:'1.1.0'}),{headers});
   ctx=await context(env,transport);let body={};
   if(!['GET','HEAD'].includes(req.method))body=await bodyJSON(req);
-  const rubikaWebhook=path.match(/^\/rubika\/webhook\/([a-f0-9]{64})$/);
-  if(rubikaWebhook){
-   assert(req.method==='POST','METHOD_NOT_ALLOWED',405);
-   const secret=await ctx.secret('rubika_webhook');
-   assert(secret&&equal(await hash(secret),await hash(rubikaWebhook[1])),'WEBHOOK_DENIED',403);
-   const result=await receiveRubika(ctx,body,handleMessage);
-   return new Response(JSON.stringify(result),{headers});
-  }
-  if(path.startsWith('/rubika'))throw new AppError('WEBHOOK_DENIED',403);
   const webhook=path.match(/^\/webhook\/([a-f0-9]{64})$/);
   if(webhook){
    assert(req.method==='POST','METHOD_NOT_ALLOWED',405);const secret=await ctx.secret('webhook');assert(secret&&equal(await hash(secret),await hash(webhook[1])),'WEBHOOK_DENIED',403);
+   botId=(await ctx.settings()).bot_id;assert(botId,'BOT_NOT_CONFIGURED',409);
    assert(Number.isSafeInteger(body.update_id)&&body.update_id>=0,'INVALID_UPDATE');
    if(body.pre_checkout_query){await preCheckout(ctx,body.pre_checkout_query);return new Response(JSON.stringify({ok:true}),{headers});}
    const msg=body.message;if(!msg||msg.chat?.type!=='private'||!Number.isSafeInteger(msg.from?.id)||msg.from.id<1||msg.from.id!==msg.chat?.id)return new Response(JSON.stringify({ok:true}),{headers});
    updateId=body.update_id;updateOwner=crypto.randomUUID();
-   if(!await ctx.db.rpc('claim_update',{p_id:updateId,p_owner:updateOwner})){
-    const existing=await ctx.db.one('updates',`update_id=eq.${updateId}`);if(existing?.status==='done')return new Response(JSON.stringify({ok:true,duplicate:true}),{headers});throw new AppError('BUSY_RETRY',503);
+   if(!await ctx.db.rpc('claim_bot_update',{p_bot:botId,p_id:updateId,p_owner:updateOwner})){
+    const existing=await ctx.db.one('updates',`bot_id=eq.${botId}&update_id=eq.${updateId}`);if(existing?.status==='done')return new Response(JSON.stringify({ok:true,duplicate:true}),{headers});throw new AppError('BUSY_RETRY',503);
    }
-   ctx.updateId=updateId;await ctx.lease(`chat:${msg.from.id}`,()=>handleMessage(ctx,msg));
-   await ctx.db.patch('updates',`update_id=eq.${updateId}&owner=eq.${updateOwner}`,{status:'done',error_code:null});return new Response(JSON.stringify({ok:true}),{headers});
+   ctx.updateId=updateId;ctx.requestKey=`bot:${botId}:update:${updateId}`;
+   await ctx.lease(`chat:${msg.from.id}`,()=>handleMessage(ctx,msg));
+   await ctx.db.patch('updates',`bot_id=eq.${botId}&update_id=eq.${updateId}&owner=eq.${updateOwner}`,{status:'done',error_code:null});return new Response(JSON.stringify({ok:true}),{headers});
   }
   if(path.startsWith('/webhook'))throw new AppError('WEBHOOK_DENIED',403);
   let result=await authRoute(ctx,path,req,body);
@@ -56,7 +48,7 @@ export function createHandler(env,transport=fetch){return async req=>{
   assert(result!==null,'NOT_FOUND',404);return new Response(JSON.stringify(result),{headers});
  }catch(e){
   const code=e instanceof AppError?e.code:'INTERNAL_ERROR',status=e instanceof AppError?e.status:500;
-  if(ctx&&updateId!==undefined&&updateOwner)await ctx.db.patch('updates',`update_id=eq.${updateId}&owner=eq.${updateOwner}&status=eq.processing`,{status:'error',error_code:code}).catch(()=>{});
+  if(ctx&&updateId!==undefined&&updateOwner)await ctx.db.patch('updates',`bot_id=eq.${botId}&update_id=eq.${updateId}&owner=eq.${updateOwner}&status=eq.processing`,{status:'error',error_code:code}).catch(()=>{});
   // Never log request bodies, URLs containing webhook secrets, upstream errors, or credentials.
   return new Response(JSON.stringify({error:code}),{status,headers});
  }
