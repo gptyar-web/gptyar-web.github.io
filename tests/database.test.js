@@ -16,7 +16,7 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
   await db.exec(await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8'));
   // Upgrades must also remain safe to reapply after the consolidated fresh schema.
-  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql','20261026150755_replace_integration_tokens_remove_legacy_messaging.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql','20261026200939_gpyb_replace_integration_tokens_remove_legacy_messaging.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
   await scenario('free checkout is idempotent and consumes exactly one coupon use',async()=>{
    await db.exec("insert into public.gpyb_coupons(code,kind,value,max_uses) values('FREE','percent',100,1)");
    const sql="select * from public.gpyb_checkout_order(101,7,'purchase','FREE',null,null,'update:11')";
@@ -92,7 +92,7 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
   });
   await scenario('retired connection migration removes secrets and RPCs while retaining historical records',async()=>{
    await db.exec("create table public.gpyb_rubika_users(rubika_id text primary key); insert into public.gpyb_rubika_users values('historical-user'); grant select on public.gpyb_rubika_users to service_role; create function public.gpyb_rubika_identity(text) returns bigint language sql as 'select -1::bigint'; insert into public.gpyb_secrets(key,ciphertext) values('rubika_bot','old-token'),('rubika_webhook','old-webhook'),('bale_payment','wallet')");
-   const migration=await readFile(new URL('../supabase/migrations/20261026150755_replace_integration_tokens_remove_legacy_messaging.sql',import.meta.url),'utf8');
+   const migration=await readFile(new URL('../supabase/migrations/20261026200939_gpyb_replace_integration_tokens_remove_legacy_messaging.sql',import.meta.url),'utf8');
    await db.exec(migration);await db.exec(migration);
    assert.equal((await row("select count(*)::int n from public.gpyb_secrets where key like 'rubika%'")).n,0);
    assert.equal((await row("select count(*)::int n from pg_proc where proname='gpyb_rubika_identity'")).n,0);

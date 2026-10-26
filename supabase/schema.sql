@@ -524,7 +524,7 @@ end; $$;
 
 notify pgrst, 'reload schema';
 
--- 20261026150755_replace_integration_tokens_remove_legacy_messaging.sql
+-- 20261026200939_gpyb_replace_integration_tokens_remove_legacy_messaging.sql
 -- Replace credentials without losing orders or confusing identities across accounts.
 alter table public.gpyb_orders add column if not exists extension_account_id text not null default '';
 alter table public.gpyb_orders add column if not exists bot_id bigint not null default 0;
