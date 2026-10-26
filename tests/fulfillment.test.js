@@ -34,6 +34,19 @@ test('renewal retries use the persisted absolute expiration and cannot add days 
 test('an unpaid order cannot call the extension',async()=>{
  const f=fixture();f.order.paid_at=null;await assert.rejects(()=>fulfill(f.ctx,id),{code:'PAYMENT_REQUIRED'});assert.equal(f.counts().creates,0);
 });
+test('changing the manager account never creates or renews a previous account order',async()=>{
+ for(const renewal of [false,true]){
+  const f=fixture({renewal});f.order.extension_account_id='previous-account';
+  f.ctx.extension=async()=>{assert.fail('An unrelated manager token must not be used');};
+  await assert.rejects(()=>fulfill(f.ctx,id),{code:'EXTENSION_SCOPE'});
+  assert.deepEqual(f.counts(),{creates:0,updates:0,completions:0});
+ }
+});
+test('an existing subscription from another manager account cannot be selected for a paid order',async()=>{
+ const f=fixture();f.order.extension_account_id='previous-account';
+ await assert.rejects(()=>chooseSubscription(f.ctx,id,123,'user-token'),{code:'EXTENSION_SCOPE'});
+ assert.deepEqual(f.counts(),{creates:0,updates:0,completions:0});
+});
 
 test('new subscription is created using only the submitted first and last name',async()=>{
  const f=fixture();await fulfill(f.ctx,id);
