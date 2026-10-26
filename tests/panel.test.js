@@ -60,3 +60,26 @@ test('ambiguous account recovery is available in the panel and escapes names',()
   click(p.w,'[data-action=resolve]');assert.ok(doc.querySelector('#resolve-form input[type=password]'));
  }finally{p.dom.window.close();}
 });
+test('all three connection tokens can be replaced from the panel and removed connections are absent',async()=>{
+ const posted=[],settings={bot_username:'test_bot',extension_account_id:'old-account',extension_version:'4.6.5',daily_price_toman:35000,max_days:365};
+ let settingsReads=0;
+ const p=panel(async(url,opts)=>{
+  if(url.endsWith('/integrations/check'))return Response.json({bale_bot:{ok:true},extension_admin:{ok:true},bale_payment:{saved:true}});
+  if(opts.method==='POST'){const data=JSON.parse(opts.body);posted.push(data);return Response.json({ok:true,wallet_reset:data.kind==='bale_bot'});}
+  settingsReads++;return Response.json({settings,integrations:['bale_bot','bale_payment','extension_admin'].map(key=>({key})),links:[]});
+ });
+ try{
+  await p.ui.navigate('integrations');const doc=p.w.document;
+  assert.equal(doc.querySelectorAll('form[data-integration]').length,3);assert.ok(!doc.body.textContent.includes('روبیکا'));
+  for(const [kind,token]of [['bale_bot','456:new-bot-token'],['bale_payment','new-wallet-token'],['extension_admin','@new-manager-token']]){
+   const selector=`form[data-integration="${kind}"]`;const form=doc.querySelector(selector);
+   assert.match(form.textContent,/جایگزینی/);assert.equal(form.elements.token.type,'password');assert.equal(form.elements.token.value,'');
+   form.elements.token.value=token;const previous=settingsReads;submit(p.w,selector);
+   await waitFor(()=>settingsReads>previous&&doc.querySelector(selector)?.elements.token.value==='');
+   assert.deepEqual(posted.at(-1),{kind,token});assert.ok(!doc.body.textContent.includes(token));
+   if(kind==='bale_bot')assert.match(doc.querySelector('#toast').textContent,/کیف پول همین ربات/);
+  }
+  click(p.w,'[data-action=check-integrations]');await waitFor(()=>doc.querySelector('#connection-results').textContent.includes('نتیجه بررسی'));
+  assert.ok(!doc.querySelector('#connection-results').textContent.includes('روبیکا'));
+ }finally{p.dom.window.close();}
+});
