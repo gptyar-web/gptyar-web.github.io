@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Database,Extension} from '../supabase/functions/gptyar-bale/clients.js';
-import {preCheckout,sendInvoice} from '../supabase/functions/gptyar-bale/bot.js';
+import {preCheckout,sendInvoice,reconcilePayment} from '../supabase/functions/gptyar-bale/bot.js';
 import {saveIntegration} from '../supabase/functions/gptyar-bale/integrations.js';
 import {AppError} from '../supabase/functions/gptyar-bale/domain.js';
 
@@ -31,6 +31,19 @@ test('an invoice already sent to Bale stays payable if saving its message ID fai
  const bale={send:async()=>{},call:async(method,body)=>{payloads.push(body.payload);return{message_id:2};}};
  await assert.rejects(()=>sendInvoice(ctx,bale,123,order),{code:'DATABASE_UNREACHABLE'});assert.equal(order.status,'pending');
  await sendInvoice(ctx,bale,123,order);assert.deepEqual(payloads,['order1','order1']);assert.equal(order.error_code,null);
+});
+test('old bot invoices cannot be issued or queried using the replacement bot credential',async()=>{
+ const order={id:'order1',bot_id:123,status:'pending',pre_checkout_id:'charge1',expires_at:new Date(Date.now()+1800000).toISOString()};
+ const ctx={settings:async()=>({bot_id:456}),bale:async()=>{assert.fail('Do not query the new bot about an old bot transaction');}};
+ const bale={call:async()=>assert.fail('Do not issue the old invoice through the new bot')};
+ await assert.rejects(()=>sendInvoice(ctx,bale,101,order),{code:'BOT_SCOPE'});
+ await assert.rejects(()=>reconcilePayment(ctx,order),{code:'BOT_SCOPE'});
+});
+test('invoices for a previous extension account are rejected before requesting payment',async()=>{
+ const order={id:'order1',bot_id:123,extension_account_id:'old-account',status:'pending',expires_at:new Date(Date.now()+1800000).toISOString()};
+ const ctx={settings:async()=>({bot_id:123,extension_account_id:'new-account'})};
+ const bale={call:async()=>assert.fail('Do not charge for another extension account')};
+ await assert.rejects(()=>sendInvoice(ctx,bale,101,order),{code:'EXTENSION_SCOPE'});
 });
 function integrationFixture({fail=false}={}){
  const calls=[],saved=[],settings={bot_id:123,extension_version:'4.6.5'};
