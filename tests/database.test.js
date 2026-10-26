@@ -16,7 +16,7 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
   await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
   await db.exec(await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8'));
   // Upgrades must also remain safe to reapply after the consolidated fresh schema.
-  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql','20261026200939_gpyb_replace_integration_tokens_remove_legacy_messaging.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+  for(const name of ['20261023_free_coupons_and_extension_names.sql','20261023_reliable_checkout_and_recovery.sql','20261026200939_gpyb_replace_integration_tokens_remove_legacy_messaging.sql','20261026202453_gpyb_fix_guarded_integration_reset.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
   await scenario('free checkout is idempotent and consumes exactly one coupon use',async()=>{
    await db.exec("insert into public.gpyb_coupons(code,kind,value,max_uses) values('FREE','percent',100,1)");
    const sql="select * from public.gpyb_checkout_order(101,7,'purchase','FREE',null,null,'update:11')";
@@ -130,6 +130,12 @@ test('Postgres checkout, ownership and authentication invariants',async t=>{
    assert.ok(funcs.length>=18);assert.ok(funcs.every(f=>!f.anon&&!f.authenticated));
   });
   // Historical invariants are also run in the isolated database, including TOTP replay and payment duplication.
+  await t.test('credential-reset fixture preserves history and same-account conversations',async()=>{
+   // PGlite checks the flow; run this SQL file on native Postgres to include pg-safeupdate's parser hook.
+   const sql=(await readFile(new URL('./guarded-integration-reset.sql',import.meta.url),'utf8'))
+    .replace(/^load 'safeupdate';\n/m,'').replace(/^set local safeupdate.enabled=on;\n/m,'');
+   await db.exec(sql);
+  });
   await t.test('original SQL payment and TOTP regression suite',async()=>{await db.exec(await readFile(new URL('./database.sql',import.meta.url),'utf8'));});
  }finally{await db.close();}
 });
